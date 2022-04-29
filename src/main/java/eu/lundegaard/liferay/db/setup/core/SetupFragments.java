@@ -23,6 +23,9 @@
  */
 package eu.lundegaard.liferay.db.setup.core;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
@@ -31,10 +34,10 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import eu.lundegaard.liferay.db.setup.core.util.ResourcesUtil;
 import eu.lundegaard.liferay.db.setup.domain.Fragment;
 import eu.lundegaard.liferay.db.setup.domain.FragmentCollection;
-import java.util.List;
-import java.util.Optional;
+import eu.lundegaard.liferay.db.setup.domain.FragmentData;
 
 /**
  * @author michal.volf@lundegaard.eu
@@ -54,7 +57,7 @@ public class SetupFragments {
                     createFragmentCollection(fragmentCollection, userId, groupId, serviceContext);
                     break;
                 case "update":
-                    updateFragmentCollection(fragmentCollection, groupId);
+                    updateFragmentCollection(fragmentCollection, userId, groupId, serviceContext);
                     break;
                 case "delete":
                     deleteFragmentCollection(fragmentCollection, groupId);
@@ -106,7 +109,8 @@ public class SetupFragments {
         }
     }
 
-    private static void updateFragmentCollection(FragmentCollection fragmentCollection, long groupId) {
+    private static void updateFragmentCollection(FragmentCollection fragmentCollection, long groupId, long userId,
+            ServiceContext serviceContext) {
         String collectionName = fragmentCollection.getName();
         LOG.info("Updating fragment collection " + collectionName);
 
@@ -118,6 +122,23 @@ public class SetupFragments {
                 FragmentCollectionLocalServiceUtil.updateFragmentCollection(
                         existingCollection.get().getFragmentCollectionId(), fragmentCollection.getName(),
                         fragmentCollection.getDescription());
+                LOG.info("Collection information updated");
+                for (Fragment fragment : fragmentCollection.getFragment()) {
+                    switch (fragment.getSetupAction()) {
+                        case "create":
+                            createFragment(fragment, userId, groupId, existingCollection.get(), serviceContext);
+                            break;
+                        case "update":
+                            updateFragment(fragment, userId, groupId, existingCollection.get());
+                            break;
+                        case "delete":
+                            deleteFragment(fragment, groupId, existingCollection.get());
+                            break;
+                        default:
+                            throw new IllegalArgumentException(
+                                    "Illegal setup action " + fragmentCollection.getSetupAction());
+                    }
+                }
                 LOG.info("Collection updated successfully");
             } catch (PortalException e) {
                 LOG.error("Error during updating the collection " + collectionName, e);
@@ -173,14 +194,35 @@ public class SetupFragments {
                 LOG.warn("Fragment " + fragment.getEntryKey() + " already exists in collection "
                         + createdCollection.getName() + ", skipping...");
             } else {
+                String html = getContentFromElement(fragment.getHtml(), fragment.getName());
+                String css = getContentFromElement(fragment.getCss(), fragment.getName());
+                String js = getContentFromElement(fragment.getJs(), fragment.getName());
+                String config = getContentFromElement(fragment.getConfiguration(), fragment.getName());
+
                 FragmentEntryLocalServiceUtil.addFragmentEntry(userId, groupId,
                         createdCollection.getFragmentCollectionId(), fragment.getEntryKey(), fragment.getName(),
-                        fragment.getCss(), fragment.getHtml(), fragment.getJs(), fragment.getConfiguration(),
+                        css, html, js, config,
                         0, 1, 0, serviceContext);
             }
         } catch (PortalException e) {
             LOG.error("Error during setup of fragment " + fragment.getName(), e);
         }
+    }
+
+
+    private static String getContentFromElement(FragmentData fragmentData, String fragmentName) {
+        String content = "";
+        try {
+            if (fragmentData.getPath() != null && !fragmentData.getPath().isEmpty()) {
+                content = ResourcesUtil.getFileContent(fragmentData.getPath());
+            } else {
+                content = fragmentData.getValue();
+            }
+
+        } catch (IOException e) {
+            LOG.error("Error during setup of fragment " + fragmentName, e);
+        }
+        return content;
     }
 
     private static void updateFragment(Fragment fragment, long userId, long groupId,
@@ -192,9 +234,14 @@ public class SetupFragments {
         if (existingFragment.isPresent()) {
             LOG.info("Fragment " + fragmentName + " found, updating...");
             try {
+                String html = getContentFromElement(fragment.getHtml(), fragment.getName());
+                String css = getContentFromElement(fragment.getCss(), fragment.getName());
+                String js = getContentFromElement(fragment.getJs(), fragment.getName());
+                String config = getContentFromElement(fragment.getConfiguration(), fragment.getName());
+
                 FragmentEntryLocalServiceUtil.updateFragmentEntry(userId, existingFragment.get().getFragmentEntryId(),
-                        fragmentName, fragment.getCss(), fragment.getHtml(), fragment.getJs(),
-                        fragment.getConfiguration(), 0);
+                        fragmentName, css, html, js,
+                        config, 0);
                 LOG.info("Fragment updated successfully");
             } catch (PortalException e) {
                 LOG.error("Error during updating the fragment " + fragmentName, e);
