@@ -142,6 +142,30 @@ Article's content is determined by `path` attribute which defines resource on cl
                   article-structure-key="BANNER-MAIN" name="Banner - main" cacheable="true"/>
 ```
 
+### Fragment Collection and Fragments
+
+Fragment collections and fragments can be `created, updated or deleted`.
+This action is determined via `setup-action` attributes.\
+Fragment content can be set by `path` attribute or by inner tag `<![CDATA[]]>`.
+
+```xml
+ <fragment-collection name="FragmentCollection" setup-action="update">
+        <fragment name="test-fragment" entryKey="test-fragmentKey">
+            <html path="my-project/content/fragments/test-fragment/content.html" />
+            <css>
+            <![CDATA[
+            .fragment-text-red{
+            	color:red !important;
+            }
+            ]]>
+            </css>
+            <js></js>
+            <configuration path="my-project/content/fragments/test-fragment/config.json" />
+        </fragment>
+    </fragment-collection>
+```
+
+
 ### Others
 
 You can create/update/set many other artifacts like User, Organization, Page, Portlet placement, Permission, ... See source code.
