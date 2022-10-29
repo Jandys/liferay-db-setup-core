@@ -23,6 +23,9 @@
  */
 package eu.lundegaard.liferay.db.setup.core;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentCollectionLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
@@ -31,13 +34,15 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import eu.lundegaard.liferay.db.setup.core.util.ResourcesUtil;
 import eu.lundegaard.liferay.db.setup.domain.Fragment;
 import eu.lundegaard.liferay.db.setup.domain.FragmentCollection;
-import java.util.List;
-import java.util.Optional;
+import eu.lundegaard.liferay.db.setup.domain.FragmentData;
+import static eu.lundegaard.liferay.db.setup.domain.SetupActionType.CREATE;
 
 /**
  * @author michal.volf@lundegaard.eu
+ * @author jakun.jandak@lundegaard.eu 2022
  */
 public class SetupFragments {
 
@@ -49,14 +54,16 @@ public class SetupFragments {
         for (FragmentCollection fragmentCollection : fragmentCollections) {
             ServiceContext serviceContext = new ServiceContext();
 
+            if (fragmentCollection.getSetupAction() == null) {
+                fragmentCollection.setSetupAction(CREATE);
+            }
+
             switch (fragmentCollection.getSetupAction()) {
-                case "create":
-                    createFragmentCollection(fragmentCollection, userId, groupId, serviceContext);
+                case CREATE:
+                case UPDATE:
+                    saveFragmentCollection(fragmentCollection, userId, groupId, serviceContext);
                     break;
-                case "update":
-                    updateFragmentCollection(fragmentCollection, groupId);
-                    break;
-                case "delete":
+                case DELETE:
                     deleteFragmentCollection(fragmentCollection, groupId);
                     break;
                 default:
@@ -67,63 +74,47 @@ public class SetupFragments {
         }
     }
 
-    private static void createFragmentCollection(FragmentCollection fragmentCollection, long userId, long groupId,
+    private static void saveFragmentCollection(FragmentCollection fragmentCollection, long userId, long groupId,
             ServiceContext serviceContext) {
         String collectionName = fragmentCollection.getName();
-        LOG.info("Creating fragment collection " + collectionName);
-
+        com.liferay.fragment.model.FragmentCollection collection;
         try {
             Optional<com.liferay.fragment.model.FragmentCollection> existingCollection =
                     findFragmentCollection(collectionName, groupId);
 
             if (existingCollection.isPresent()) {
-                LOG.info("Fragment collection " + collectionName + " already exists, skipping...");
-            } else {
-                com.liferay.fragment.model.FragmentCollection createdCollection =
-                        FragmentCollectionLocalServiceUtil.addFragmentCollection(
-                                userId, groupId, collectionName, fragmentCollection.getDescription(),
-                                serviceContext);
-
-                for (Fragment fragment : fragmentCollection.getFragment()) {
-                    switch (fragment.getSetupAction()) {
-                        case "create":
-                            createFragment(fragment, userId, groupId, createdCollection, serviceContext);
-                            break;
-                        case "update":
-                            updateFragment(fragment, userId, groupId, createdCollection);
-                            break;
-                        case "delete":
-                            deleteFragment(fragment, groupId, createdCollection);
-                            break;
-                        default:
-                            throw new IllegalArgumentException(
-                                    "Illegal setup action " + fragmentCollection.getSetupAction());
-                    }
-                }
-            }
-        } catch (PortalException e) {
-            LOG.error("Error during setup of collection " + collectionName, e);
-        }
-    }
-
-    private static void updateFragmentCollection(FragmentCollection fragmentCollection, long groupId) {
-        String collectionName = fragmentCollection.getName();
-        LOG.info("Updating fragment collection " + collectionName);
-
-        Optional<com.liferay.fragment.model.FragmentCollection> existingCollection =
-                findFragmentCollection(collectionName, groupId);
-        if (existingCollection.isPresent()) {
-            LOG.info("Fragment collection " + collectionName + " found, updating...");
-            try {
-                FragmentCollectionLocalServiceUtil.updateFragmentCollection(
+                LOG.info("Updating collection " + fragmentCollection.getName());
+                collection = FragmentCollectionLocalServiceUtil.updateFragmentCollection(
                         existingCollection.get().getFragmentCollectionId(), fragmentCollection.getName(),
                         fragmentCollection.getDescription());
-                LOG.info("Collection updated successfully");
-            } catch (PortalException e) {
-                LOG.error("Error during updating the collection " + collectionName, e);
+            } else {
+                LOG.info("Creating collection " + fragmentCollection.getName());
+                collection = FragmentCollectionLocalServiceUtil.addFragmentCollection(
+                        userId, groupId, collectionName, fragmentCollection.getDescription(),
+                        serviceContext);
             }
-        } else {
-            LOG.warn("Collection " + collectionName + " not found");
+            for (Fragment fragment : fragmentCollection.getFragment()) {
+
+                if (fragment.getSetupAction() == null) {
+                    fragment.setSetupAction(CREATE);
+                }
+
+                switch (fragment.getSetupAction()) {
+                    case CREATE:
+                    case UPDATE:
+                        saveFragment(fragment, userId, groupId, collection, serviceContext);
+                        break;
+                    case DELETE:
+                        deleteFragment(fragment, groupId, collection);
+                        break;
+                    default:
+                        throw new IllegalArgumentException(
+                                "Illegal setup action " + fragmentCollection.getSetupAction());
+                }
+            }
+
+        } catch (PortalException e) {
+            LOG.error("Error during setup of collection " + collectionName, e);
         }
     }
 
@@ -163,45 +154,47 @@ public class SetupFragments {
                 .findFirst();
     }
 
-    private static void createFragment(Fragment fragment, long userId, long groupId,
+    private static void saveFragment(Fragment fragment, long userId, long groupId,
             com.liferay.fragment.model.FragmentCollection createdCollection, ServiceContext serviceContext) {
-        LOG.info("Setting up fragment " + fragment.getName());
-
         try {
+            String html = getContentFromElement(fragment.getHtml(), fragment.getName());
+            String css = getContentFromElement(fragment.getCss(), fragment.getName());
+            String js = getContentFromElement(fragment.getJs(), fragment.getName());
+            String config = getContentFromElement(fragment.getConfiguration(), fragment.getName());
+
             Optional<FragmentEntry> existingFragment = findFragment(fragment, createdCollection, groupId);
+
             if (existingFragment.isPresent()) {
-                LOG.warn("Fragment " + fragment.getEntryKey() + " already exists in collection "
-                        + createdCollection.getName() + ", skipping...");
+                LOG.info("Updating fragment " + fragment.getName());
+                FragmentEntryLocalServiceUtil.updateFragmentEntry(userId, existingFragment.get().getFragmentEntryId(),
+                        fragment.getName(), css, html, js,
+                        config, 0);
             } else {
+                LOG.info("Creating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.addFragmentEntry(userId, groupId,
                         createdCollection.getFragmentCollectionId(), fragment.getEntryKey(), fragment.getName(),
-                        fragment.getCss(), fragment.getHtml(), fragment.getJs(), fragment.getConfiguration(),
+                        css, html, js, config,
                         0, 1, 0, serviceContext);
             }
         } catch (PortalException e) {
             LOG.error("Error during setup of fragment " + fragment.getName(), e);
         }
+
     }
 
-    private static void updateFragment(Fragment fragment, long userId, long groupId,
-            com.liferay.fragment.model.FragmentCollection createdCollection) {
-        String fragmentName = fragment.getName();
-        LOG.info("Updating fragment " + fragmentName);
-
-        Optional<FragmentEntry> existingFragment = findFragment(fragment, createdCollection, groupId);
-        if (existingFragment.isPresent()) {
-            LOG.info("Fragment " + fragmentName + " found, updating...");
-            try {
-                FragmentEntryLocalServiceUtil.updateFragmentEntry(userId, existingFragment.get().getFragmentEntryId(),
-                        fragmentName, fragment.getCss(), fragment.getHtml(), fragment.getJs(),
-                        fragment.getConfiguration(), 0);
-                LOG.info("Fragment updated successfully");
-            } catch (PortalException e) {
-                LOG.error("Error during updating the fragment " + fragmentName, e);
+    private static String getContentFromElement(FragmentData fragmentData, String fragmentName) {
+        String content = "";
+        try {
+            if (fragmentData.getPath() != null && !fragmentData.getPath().isEmpty()) {
+                content = ResourcesUtil.getFileContent(fragmentData.getPath());
+            } else {
+                content = fragmentData.getValue();
             }
-        } else {
-            LOG.warn("Fragment " + fragmentName + " not found");
+
+        } catch (IOException e) {
+            LOG.error("Error during setup of fragment " + fragmentName, e);
         }
+        return content;
     }
 
     private static void deleteFragment(Fragment fragment, long groupId,

@@ -11,14 +11,14 @@ First add this dependency into your OSGi module project's `pom.xml`.
 <dependency>
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>3.1.0</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 
 and specify the dependency in your `bnd.bnd` file as a resource to include.
 
 ```properties
-Include-Resource: @liferay-db-setup-core-3.1.0.jar
+Include-Resource: @liferay-db-setup-core-3.2.0.jar
 ```
 
 Second create `UpgradeStepRegistrator` component to register your upgrade steps, e.g.
@@ -142,15 +142,40 @@ Article's content is determined by `path` attribute which defines resource on cl
                   article-structure-key="BANNER-MAIN" name="Banner - main" cacheable="true"/>
 ```
 
+### Fragment Collection and Fragments
+
+Fragment collections and fragments can be `created, updated or deleted`.
+This action is determined via `setup-action` attributes.\
+Fragment content can be set by `path` attribute or by inner tag `<![CDATA[]]>`.
+
+```xml
+ <fragment-collection name="FragmentCollection" setup-action="update">
+        <fragment name="test-fragment" entryKey="test-fragmentKey">
+            <html path="my-project/content/fragments/test-fragment/content.html" />
+            <css>
+            <![CDATA[
+            .fragment-text-red{
+            	color:red !important;
+            }
+            ]]>
+            </css>
+            <js></js>
+            <configuration path="my-project/content/fragments/test-fragment/config.json" />
+        </fragment>
+    </fragment-collection>
+```
+
+
 ### Others
 
 You can create/update/set many other artifacts like User, Organization, Page, Portlet placement, Permission, ... See source code.
 
 ## Compatibility
 
-|| Liferay Portal Version || Version ||
-| 7.3.x | 3.1.x |
-| 7.2.x | 3.0.x |
-| older | use original [Mimacom library](https://github.com/mimacom/liferay-db-setup-core) |
+Liferay Portal Version | Version
+---------------------- | -------
+7.3.x | 3.1.x
+7.2.x | 3.0.x
+older | use original [Mimacom library](https://github.com/mimacom/liferay-db-setup-core)
 
 
