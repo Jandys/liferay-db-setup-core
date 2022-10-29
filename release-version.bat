@@ -28,7 +28,7 @@ git merge --ff-only origin/develop
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 
 :: Build develop
-mvn clean package
+call mvn clean package
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 
 :: Create release branch
@@ -37,7 +37,7 @@ if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 
 :: Maven release version
 git checkout release/%RELEASE_VERSION%
-mvn versions:set -DnewVersion="%RELEASE_VERSION%" -DgenerateBackupPoms=false
+call mvn versions:set -DnewVersion="%RELEASE_VERSION%" -DgenerateBackupPoms=false
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 git add "*pom.xml"
 git commit -m "release/%RELEASE_VERSION% Maven project version set to %RELEASE_VERSION%"
@@ -50,7 +50,7 @@ git branch -d release/%RELEASE_VERSION%
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 
 :: Build new production artifacts
-mvn clean deploy -P release
+call mvn clean deploy -P release
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 
 :: Tag the new relase version
@@ -63,7 +63,7 @@ git merge -m "Merge branch 'master' with version '%RELEASE_VERSION%' into develo
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 
 :: Maven next development version
-mvn versions:set -DnewVersion="%NEXT_DEV_VERSION%" -DgenerateBackupPoms=false
+call mvn versions:set -DnewVersion="%NEXT_DEV_VERSION%" -DgenerateBackupPoms=false
 if %ERRORLEVEL% NEQ 0 (EXIT /B 1)
 git add "*pom.xml"
 git commit -m "release/%RELEASE_VERSION% Development continues on version %NEXT_DEV_VERSION%"
