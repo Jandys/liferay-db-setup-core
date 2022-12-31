@@ -164,17 +164,21 @@ public class SetupFragments {
 
             Optional<FragmentEntry> existingFragment = findFragment(fragment, createdCollection, groupId);
 
+            long fragmentCollectionId = 0;
+            long previewFileEntryId = 0;
+            boolean cachable = true;
+
             if (existingFragment.isPresent()) {
                 LOG.info("Updating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.updateFragmentEntry(userId, existingFragment.get().getFragmentEntryId(),
-                        fragment.getName(), css, html, js,
-                        config, 0);
+                        fragmentCollectionId, fragment.getName(), css, html, js, cachable,
+                        config, "icon", previewFileEntryId, 0);
             } else {
                 LOG.info("Creating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.addFragmentEntry(userId, groupId,
                         createdCollection.getFragmentCollectionId(), fragment.getEntryKey(), fragment.getName(),
-                        css, html, js, config,
-                        0, 1, 0, serviceContext);
+                        css, html, js, cachable, config, "icon",
+                        previewFileEntryId, 1, "typeOptions", 0, serviceContext);
             }
         } catch (PortalException e) {
             LOG.error("Error during setup of fragment " + fragment.getName(), e);

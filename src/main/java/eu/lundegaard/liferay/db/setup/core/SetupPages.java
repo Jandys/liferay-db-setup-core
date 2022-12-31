@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 
 public final class SetupPages {
 
@@ -113,7 +114,9 @@ public final class SetupPages {
                     publicPages.getDefaultLayoutContainedInThemeWithId(),
                     groupId, false, 0, company, userid);
             if (publicPages.getVirtualHost() != null) {
-                LayoutSetLocalServiceUtil.updateVirtualHost(groupId, false, publicPages.getVirtualHost());
+                TreeMap<String, String> hosts = new TreeMap<>();
+                hosts.put("host", publicPages.getVirtualHost());
+                LayoutSetLocalServiceUtil.updateVirtualHosts(groupId, false, hosts);
             }
         }
 
@@ -130,7 +133,9 @@ public final class SetupPages {
                     privatePages.getDefaultLayoutContainedInThemeWithId(),
                     groupId, true, 0, company, userid);
             if (privatePages.getVirtualHost() != null) {
-                LayoutSetLocalServiceUtil.updateVirtualHost(groupId, true, privatePages.getVirtualHost());
+                TreeMap<String, String> hosts = new TreeMap<>();
+                hosts.put("host", privatePages.getVirtualHost());
+                LayoutSetLocalServiceUtil.updateVirtualHosts(groupId, false, hosts);
             }
         }
     }
