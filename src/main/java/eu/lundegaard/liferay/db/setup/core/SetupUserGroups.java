@@ -102,7 +102,11 @@ public class SetupUserGroups {
                 continue;
             }
 
-            UserGroupLocalServiceUtil.addUserUserGroup(user.getUserId(), liferayUserGroup.getUserGroupId());
+            try {
+                UserGroupLocalServiceUtil.addUserUserGroup(user.getUserId(), liferayUserGroup.getUserGroupId());
+            } catch (PortalException e) {
+                throw new RuntimeException(e);
+            }
             LOG.info("User " + user.getScreenName() + " successfully added as a member to UserGroup "
                     + liferayUserGroup.getName());
         }

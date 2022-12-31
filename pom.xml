@@ -12,7 +12,7 @@
 
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Liferay Portal DB Setup core</name>
@@ -22,7 +22,7 @@
     <inceptionYear>2016</inceptionYear>
 
     <properties>
-        <liferay.version>7.3.4</liferay.version>
+        <liferay.version>7.4.3.54</liferay.version>
     </properties>
 
     <dependencyManagement>
@@ -44,11 +44,11 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.liferay.portal</groupId>
-            <artifactId>com.liferay.portal.kernel</artifactId>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.liferay.portal</groupId>-->
+<!--            <artifactId>com.liferay.portal.kernel</artifactId>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>com.liferay.portal</groupId>
             <artifactId>com.liferay.portal.impl</artifactId>
@@ -77,6 +77,22 @@
             <groupId>javax.portlet</groupId>
             <artifactId>portlet-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay.portal</groupId>
+            <artifactId>com.liferay.portal.kernel</artifactId>
+            <version>90.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.string</artifactId>
+            <version>5.2.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 

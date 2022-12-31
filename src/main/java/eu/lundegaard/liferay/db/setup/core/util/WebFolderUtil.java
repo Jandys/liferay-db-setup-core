@@ -88,7 +88,7 @@ public final class WebFolderUtil {
             serviceContext.setScopeGroupId(groupId);
             serviceContext.setCompanyId(companyId);
 
-            folder = JournalFolderLocalServiceUtil.addFolder(userId, groupId, parentFolderId, name,
+            folder = JournalFolderLocalServiceUtil.addFolder(null, userId, groupId, parentFolderId, name,
                     description, serviceContext);
 
         } catch (PortalException e) {

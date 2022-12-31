@@ -151,7 +151,7 @@ public final class SetupUsers {
         try {
             liferayUser = UserLocalServiceUtil.addUser(creatorUserId, COMPANY_ID, autoPassword,
                     password1, password2, autoScreenName, setupUser.getScreenName(), emailAddress,
-                    facebookId, openId, locale, setupUser.getFirstName(), middleName,
+                    locale, setupUser.getFirstName(), middleName,
                     setupUser.getLastName(), prefixId, suffixId, male, birthdayMonth, birthdayDay,
                     birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds,
                     sendEmail, serviceContext);

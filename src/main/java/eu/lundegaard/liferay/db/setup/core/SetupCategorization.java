@@ -23,6 +23,12 @@
  */
 package eu.lundegaard.liferay.db.setup.core;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetVocabulary;
@@ -39,18 +45,12 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portlet.asset.util.AssetVocabularySettingsHelper;
 import eu.lundegaard.liferay.db.setup.LiferaySetup;
-import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
+import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.domain.AssociatedAssetType;
 import eu.lundegaard.liferay.db.setup.domain.Category;
 import eu.lundegaard.liferay.db.setup.domain.Site;
 import eu.lundegaard.liferay.db.setup.domain.Vocabulary;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 
 /**
@@ -263,7 +263,7 @@ public final class SetupCategorization {
         }
 
         try {
-            assetCategory = AssetCategoryLocalServiceUtil.addCategory(LiferaySetup.getRunAsUserId(), groupId,
+            assetCategory = AssetCategoryLocalServiceUtil.addCategory(null, LiferaySetup.getRunAsUserId(), groupId,
                     parentCategoryId, titleMap, descMap, vocabularyId, null, serviceContext);
             LOG.info("Category successfully added with title: " + assetCategory.getTitle());
 

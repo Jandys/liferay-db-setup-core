@@ -23,6 +23,7 @@
  */
 package eu.lundegaard.liferay.db.setup.core.util;
 
+import java.sql.Date;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
@@ -122,9 +123,9 @@ public final class DocumentUtil {
             final String sourceFileName) {
         try {
             DLAppLocalServiceUtil.updateFileEntry(userId, fe.getFileEntryId(), sourceFileName,
-                    fe.getMimeType(), fe.getTitle(), fe.getDescription(), "update content",
+                    fe.getMimeType(), fe.getTitle(), "URL TITLE", fe.getDescription(), "update content",
                     DLVersionNumberIncrease.MINOR,
-                    content, new ServiceContext());
+                    content, Date.valueOf("Expiration Date"), Date.valueOf("reviewDate"), new ServiceContext());
         } catch (Exception e) {
             LOG.error("Can not update Liferay Document entry with ID:" + fe.getFileEntryId(), e);
         }
@@ -179,8 +180,9 @@ public final class DocumentUtil {
         }
         if (fileEntry == null) {
             try {
-                fileEntry = DLAppLocalServiceUtil.addFileEntry(userId, repoId, folderId, fname,
-                        mtype, title, title, "Mimacom import", content, new ServiceContext());
+                fileEntry = DLAppLocalServiceUtil.addFileEntry(null, userId, repoId, folderId, fname,
+                        mtype, title, "", title, "Mimacom import", content, Date.valueOf("expirationDate"),
+                        Date.valueOf("reviewDate"), new ServiceContext());
             } catch (PortalException e) {
                 LOG.error("Error while trying to add file entry: " + title, e);
             } catch (SystemException e) {

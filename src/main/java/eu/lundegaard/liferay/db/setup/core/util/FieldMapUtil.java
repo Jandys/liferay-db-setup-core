@@ -23,13 +23,13 @@
  */
 package eu.lundegaard.liferay.db.setup.core.util;
 
+import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import eu.lundegaard.liferay.db.setup.domain.DescriptionTranslation;
 import eu.lundegaard.liferay.db.setup.domain.TitleTranslation;
 import javax.xml.stream.XMLOutputFactory;
