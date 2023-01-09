@@ -45,7 +45,7 @@ import static eu.lundegaard.liferay.db.setup.domain.SetupActionType.CREATE;
  * @author jakun.jandak@lundegaard.eu 2022
  */
 public class SetupFragments {
-
+    private static final String REQUIRED_FRAGMENT_CONFIGURATION ="{\"fieldSets\":[]}";
     private static final Log LOG = LogFactoryUtil.getLog(SetupFragments.class);
 
     private SetupFragments() {}
@@ -93,7 +93,7 @@ public class SetupFragments {
                         userId, groupId, collectionName, fragmentCollection.getDescription(),
                         serviceContext);
             }
-            for (Fragment fragment : fragmentCollection.getFragment()) {
+             for (Fragment fragment : fragmentCollection.getFragment()) {
 
                 if (fragment.getSetupAction() == null) {
                     fragment.setSetupAction(CREATE);
@@ -162,23 +162,29 @@ public class SetupFragments {
             String js = getContentFromElement(fragment.getJs(), fragment.getName());
             String config = getContentFromElement(fragment.getConfiguration(), fragment.getName());
 
+            if (config.isEmpty() || (!config.contains("{") || !config.contains("}"))){
+                config = REQUIRED_FRAGMENT_CONFIGURATION;
+            }
+
             Optional<FragmentEntry> existingFragment = findFragment(fragment, createdCollection, groupId);
 
             long fragmentCollectionId = 0;
             long previewFileEntryId = 0;
             boolean cachable = true;
+            String icon = null;
+            String typeOptions = null;
 
             if (existingFragment.isPresent()) {
                 LOG.info("Updating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.updateFragmentEntry(userId, existingFragment.get().getFragmentEntryId(),
                         fragmentCollectionId, fragment.getName(), css, html, js, cachable,
-                        config, "icon", previewFileEntryId, 0);
+                        config, icon, previewFileEntryId, 0);
             } else {
                 LOG.info("Creating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.addFragmentEntry(userId, groupId,
                         createdCollection.getFragmentCollectionId(), fragment.getEntryKey(), fragment.getName(),
-                        css, html, js, cachable, config, "icon",
-                        previewFileEntryId, 1, "typeOptions", 0, serviceContext);
+                        css, html, js, cachable, config, icon,
+                        previewFileEntryId, 1, typeOptions, 0, serviceContext);
             }
         } catch (PortalException e) {
             LOG.error("Error during setup of fragment " + fragment.getName(), e);
