@@ -141,6 +141,9 @@ public class SetupSites {
                 SetupCategorization.setupVocabularies(site, groupId);
                 LOG.info("Site Categories setting finished.");
 
+                SetupCategorization.setupTags(site, groupId);
+                LOG.info("Site Tags setting finished.");
+
                 SetupArticles.setupSiteArticles(site, groupId, COMPANY_ID);
                 LOG.info("Site Articles setting finished.");
 

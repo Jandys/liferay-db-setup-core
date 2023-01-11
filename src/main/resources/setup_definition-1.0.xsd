@@ -140,6 +140,7 @@
                 <xs:element ref="article" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="adt" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="vocabulary" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="tags" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="staging" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="ddl-structure" type="structure" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="ddl-recordset" minOccurs="0" maxOccurs="unbounded"/>
@@ -1007,5 +1008,13 @@
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
+
+    <xs:element name="tags">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tag" minOccurs="1"  maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
 </xs:schema>
