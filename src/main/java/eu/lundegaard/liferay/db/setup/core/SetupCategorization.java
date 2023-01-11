@@ -70,7 +70,7 @@ public final class SetupCategorization {
 
     }
 
-    public static void setupVocabularies(final Site site, final long groupId)
+    public static void setupVocabularies(final Site site, final long groupId, long companyId)
             throws SystemException, PortalException {
         List<Vocabulary> vocabularies = site.getVocabulary();
 
@@ -79,12 +79,12 @@ public final class SetupCategorization {
         LOG.info("Setting up vocabularies");
 
         for (Vocabulary vocabulary : vocabularies) {
-            setupVocabulary(vocabulary, site, groupId, siteDefaultLocale);
+            setupVocabulary(vocabulary, site, groupId, siteDefaultLocale, companyId);
         }
     }
 
     private static void setupVocabulary(final Vocabulary vocabulary, final Site site, final long groupId,
-            final Locale defaultLocale) {
+            final Locale defaultLocale, long companyId) {
 
         LOG.info("Setting up vocabulary with name: " + vocabulary.getName());
 
@@ -120,13 +120,13 @@ public final class SetupCategorization {
             }
 
             setupCategories(assetVocabulary.getVocabularyId(), groupId, 0L,
-                    vocabulary.getCategory(), defaultLocale);
+                    vocabulary.getCategory(), defaultLocale, companyId);
             return;
         }
 
         try {
             ServiceContext serviceContext = new ServiceContext();
-            serviceContext.setCompanyId(PortalUtil.getDefaultCompanyId());
+            serviceContext.setCompanyId(companyId);
             serviceContext.setScopeGroupId(groupId);
             assetVocabulary = AssetVocabularyLocalServiceUtil.addVocabulary(
                     LiferaySetup.getRunAsUserId(), groupId, null, titleMap, descMap,
@@ -134,7 +134,7 @@ public final class SetupCategorization {
             LOG.info("AssetVocabulary successfuly added. ID:" + assetVocabulary.getVocabularyId()
                     + ", group:" + assetVocabulary.getGroupId());
             setupCategories(assetVocabulary.getVocabularyId(), groupId, 0L,
-                    vocabulary.getCategory(), defaultLocale);
+                    vocabulary.getCategory(), defaultLocale, companyId);
         } catch (PortalException | SystemException | NullPointerException e) {
             LOG.error("Error while trying to create vocabulary with title: "
                     + assetVocabulary.getTitle(), e);
@@ -206,18 +206,18 @@ public final class SetupCategorization {
     }
 
     private static void setupCategories(final long vocabularyId, final long groupId,
-            final long parentId, final List<Category> categories, final Locale defaultLocale) {
+            final long parentId, final List<Category> categories, final Locale defaultLocale, long companyId) {
         LOG.info("Setting up categories for parentId:" + parentId);
 
         if (categories != null && !categories.isEmpty()) {
             for (Category category : categories) {
-                setupCategory(category, vocabularyId, groupId, defaultLocale, parentId);
+                setupCategory(category, vocabularyId, groupId, defaultLocale, parentId, companyId);
             }
         }
     }
 
     private static void setupCategory(final Category category, final long vocabularyId,
-            final long groupId, final Locale defaultLocale, final long parentCategoryId) {
+            final long groupId, final Locale defaultLocale, final long parentCategoryId, long companyId) {
 
         LOG.info("Setting up category with name:" + category.getName());
 
@@ -229,7 +229,7 @@ public final class SetupCategorization {
         descMap.put(defaultLocale, description);
 
         ServiceContext serviceContext = new ServiceContext();
-        serviceContext.setCompanyId(PortalUtil.getDefaultCompanyId());
+        serviceContext.setCompanyId(companyId);
         serviceContext.setScopeGroupId(groupId);
 
         AssetCategory assetCategory = null;
@@ -263,7 +263,7 @@ public final class SetupCategorization {
             }
 
             setupCategories(vocabularyId, groupId, assetCategory.getCategoryId(),
-                    category.getCategory(), defaultLocale);
+                    category.getCategory(), defaultLocale, companyId);
             return;
         }
 
@@ -273,7 +273,7 @@ public final class SetupCategorization {
             LOG.info("Category successfully added with title: " + assetCategory.getTitle());
 
             setupCategories(vocabularyId, groupId, assetCategory.getCategoryId(),
-                    category.getCategory(), defaultLocale);
+                    category.getCategory(), defaultLocale, companyId);
 
         } catch (PortalException | SystemException e) {
             LOG.error("Error in creating category with name: " + category.getName(), e);
@@ -281,15 +281,20 @@ public final class SetupCategorization {
 
     }
 
-    public static void setupTags(final Site site, final long groupId)
+    public static void setupTags(final Site site, final long groupId, long companyId)
             throws SystemException {
         Tags tags = site.getTags();
+
+        if (tags == null) {
+            return;
+        }
+
         List<Tag> listOfTags = tags.getTag();
 
         LOG.info("Setting up tags");
 
         ServiceContext serviceContext = new ServiceContext();
-        serviceContext.setCompanyId(PortalUtil.getDefaultCompanyId());
+        serviceContext.setCompanyId(companyId);
         serviceContext.setScopeGroupId(groupId);
 
         for (Tag tag : listOfTags) {

@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import eu.lundegaard.liferay.db.setup.LiferaySetup;
 import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.domain.DefinePermission;
 import eu.lundegaard.liferay.db.setup.domain.DefinePermissions;
@@ -45,8 +46,6 @@ import java.util.*;
 public final class SetupRoles {
 
     private static final Log LOG = LogFactoryUtil.getLog(SetupRoles.class);
-    private static final long COMPANY_ID = PortalUtil.getDefaultCompanyId();
-
     private static final String SCOPE_INDIVIDUAL = "individual";
     private static final String SCOPE_SITE = "site";
     private static final String SCOPE_SITE_TEMPLATE = "site template";
@@ -61,7 +60,7 @@ public final class SetupRoles {
 
         for (eu.lundegaard.liferay.db.setup.domain.Role role : roles) {
             try {
-                RoleLocalServiceUtil.getRole(COMPANY_ID, role.getName());
+                RoleLocalServiceUtil.getRole(LiferaySetup.getCompanyId(), role.getName());
                 LOG.info("Setup: Role " + role.getName() + " already exist, not creating...");
             } catch (NoSuchRoleException | ObjectNotFoundException e) {
                 addRole(role);
@@ -88,9 +87,9 @@ public final class SetupRoles {
                 }
             }
 
-            long defaultUserId = UserLocalServiceUtil.getDefaultUserId(COMPANY_ID);
-            RoleLocalServiceUtil.addRole(defaultUserId, null, 0, role.getName(), localeTitleMap,
-                    null, roleType, null, null);
+            long defaultUserId = UserLocalServiceUtil.getDefaultUserId(LiferaySetup.getCompanyId());
+            RoleLocalServiceUtil.addRole(defaultUserId, null, 0, role.getName(), localeTitleMap, null, roleType, null,
+                    null);
 
             LOG.info("Setup: Role " + role.getName() + " does not exist, adding...");
 
@@ -101,19 +100,19 @@ public final class SetupRoles {
     }
 
     public static void deleteRoles(final List<eu.lundegaard.liferay.db.setup.domain.Role> roles,
-            final String deleteMethod) {
+            final String deleteMethod, long companyId) {
 
         switch (deleteMethod) {
             case "excludeListed":
-                Map<String, eu.lundegaard.liferay.db.setup.domain.Role> toBeDeletedRoles = convertRoleListToHashMap(
-                        roles);
+                Map<String, eu.lundegaard.liferay.db.setup.domain.Role> toBeDeletedRoles =
+                        convertRoleListToHashMap(roles);
                 try {
                     for (Role role : RoleLocalServiceUtil.getRoles(-1, -1)) {
                         String name = role.getName();
                         if (!toBeDeletedRoles.containsKey(name)) {
                             try {
-                                RoleLocalServiceUtil
-                                        .deleteRole(RoleLocalServiceUtil.getRole(COMPANY_ID, name));
+                                RoleLocalServiceUtil.deleteRole(
+                                        RoleLocalServiceUtil.getRole(companyId, name));
                                 LOG.info("Deleting Role " + name);
 
                             } catch (Exception e) {
@@ -130,7 +129,8 @@ public final class SetupRoles {
                 for (eu.lundegaard.liferay.db.setup.domain.Role role : roles) {
                     String name = role.getName();
                     try {
-                        RoleLocalServiceUtil.deleteRole(RoleLocalServiceUtil.getRole(COMPANY_ID, name));
+                        RoleLocalServiceUtil.deleteRole(
+                                RoleLocalServiceUtil.getRole(LiferaySetup.getCompanyId(), name));
                         LOG.info("Deleting Role " + name);
 
                     } catch (RequiredRoleException e) {
@@ -165,9 +165,9 @@ public final class SetupRoles {
                     String resourcePrimKey = "0";
 
                     if (permission.getElementPrimaryKey() != null) {
-                        resourcePrimKey = ResolverUtil
-                                .lookupAll(runAsUserId, groupId, companyId, permission.getElementPrimaryKey(),
-                                        "Role " + role.getName() + " permission name " + permissionName);
+                        resourcePrimKey = ResolverUtil.lookupAll(runAsUserId, groupId, companyId,
+                                permission.getElementPrimaryKey(),
+                                "Role " + role.getName() + " permission name " + permissionName);
                     }
                     String type = role.getType();
                     int scope = ResourceConstants.SCOPE_COMPANY;
@@ -212,7 +212,8 @@ public final class SetupRoles {
                         String[] loa = new String[listOfActions.size()];
                         loa = listOfActions.toArray(loa);
                         try {
-                            SetupPermissions.addPermission(role.getName(), permissionName, resourcePrimKey, scope, loa);
+                            SetupPermissions.addPermission(role.getName(), permissionName, resourcePrimKey, scope, loa,
+                                    companyId);
                         } catch (SystemException e) {
                             LOG.error(
                                     "Error when defining permission " + permissionName + " for role " + role.getName(),

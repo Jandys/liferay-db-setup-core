@@ -50,7 +50,7 @@ public final class SetupForms {
 
     private SetupForms() {}
 
-    public static void handleForms(List<Form> formList, long userId, long groupId) {
+    public static void handleForms(List<Form> formList, long userId, long groupId, long companyId) {
         for (Form form : formList) {
             String setupAction = form.getSetupAction();
             LOG.info("Executing " + setupAction + " on form " + getDefaultFormName(form));
@@ -85,7 +85,7 @@ public final class SetupForms {
                 switch (setupAction) {
                     case "create":
                         LOG.info("Creating form " + defaultFormName);
-                        createForm(userId, groupId, form, structureClassNameId);
+                        createForm(userId, groupId, form, structureClassNameId, companyId);
                         break;
                     case "update":
                         LOG.warn("Form " + defaultFormName + " not found, cannot be updated");
@@ -102,9 +102,11 @@ public final class SetupForms {
         }
     }
 
-    private static void createForm(long userId, long groupId, Form form, long structureClassNameId) {
+    private static void createForm(long userId, long groupId, Form form, long structureClassNameId, long companyId) {
         try {
             ServiceContext serviceContext = new ServiceContext();
+            serviceContext.setCompanyId(companyId);
+
             Map<Locale, String> nameMap = namesListToMap(form.getFormName().getName());
             Map<Locale, String> descriptionMap = descriptionsListToMap(form.getFormDescription().getDescription());
             String structureKey = form.getFormDbKey();
