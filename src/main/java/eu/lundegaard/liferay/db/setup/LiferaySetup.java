@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
@@ -34,6 +35,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -65,6 +67,7 @@ public final class LiferaySetup {
     private static final Log LOG = LogFactoryUtil.getLog(LiferaySetup.class);
     private static final String ADMIN_ROLE_NAME = "Administrator";
     private static long runAsUserId;
+    private static long companyId;
 
     private LiferaySetup() {
 
@@ -110,12 +113,25 @@ public final class LiferaySetup {
             try {
                 Configuration configuration = setup.getConfiguration();
 
+                String company = configuration.getCompanyId();
+                if (company == null || company.isEmpty()) {
+                    companyId = PortalUtil.getDefaultCompanyId();
+                    LOG.info("Executing in " + companyId + " companyId");
+                } else {
+                    Company companyById = CompanyLocalServiceUtil.getCompanyById(Long.parseLong(company));
+                    if (companyById != null) {
+                        LOG.info("Company found: " + companyById.getShortName());
+                        companyId = companyById.getCompanyId();
+                    }
+                }
+
+
                 String runAsUser = configuration.getRunasuser();
                 if (runAsUser == null || runAsUser.isEmpty()) {
-                    setAdminPermissionCheckerForThread(PortalUtil.getDefaultCompanyId());
+                    setAdminPermissionCheckerForThread(companyId);
                     LOG.info("Using default administrator.");
                 } else {
-                    User user = UserLocalServiceUtil.getUserByEmailAddress(PortalUtil.getDefaultCompanyId(), runAsUser);
+                    User user = UserLocalServiceUtil.getUserByEmailAddress(companyId, runAsUser);
                     runAsUserId = user.getUserId();
                     PrincipalThreadLocal.setName(runAsUserId);
                     PermissionChecker permissionChecker = PermissionCheckerFactoryUtil.create(user);
@@ -137,7 +153,6 @@ public final class LiferaySetup {
     public static void setupPortal(final Setup setup) {
 
         long defaultUserId = 0;
-        long companyId = PortalUtil.getDefaultCompanyId();
         try {
             defaultUserId = UserLocalServiceUtil.getDefaultUserId(companyId);
         } catch (PortalException e1) {
@@ -159,7 +174,7 @@ public final class LiferaySetup {
 
         if (setup.getCustomFields() != null) {
             LOG.info("Setting up " + setup.getCustomFields().getField().size() + " custom fields");
-            SetupCustomFields.setupExpandoFields(setup.getCustomFields().getField());
+            SetupCustomFields.setupExpandoFields(setup.getCustomFields().getField(), companyId);
         }
 
         if (setup.getRoles() != null) {
@@ -168,32 +183,32 @@ public final class LiferaySetup {
         }
         if (setup.getUsers() != null) {
             LOG.info("Setting up " + setup.getUsers().getUser().size() + " users");
-            SetupUsers.setupUsers(setup.getUsers().getUser(), defaultUserId, groupId);
+            SetupUsers.setupUsers(setup.getUsers().getUser(), defaultUserId, groupId, companyId);
         }
 
         if (setup.getOrganizations() != null) {
             LOG.info("Setting up " + setup.getOrganizations().getOrganization().size() + " organizations");
-            SetupOrganizations.setupOrganizations(setup.getOrganizations().getOrganization(), null, null);
+            SetupOrganizations.setupOrganizations(setup.getOrganizations().getOrganization(), null, null, companyId);
         }
 
         if (setup.getUserGroups() != null) {
             LOG.info("Setting up " + setup.getUserGroups().getUserGroup().size() + " User Groups");
-            SetupUserGroups.setupUserGroups(setup.getUserGroups().getUserGroup());
+            SetupUserGroups.setupUserGroups(setup.getUserGroups().getUserGroup(), companyId);
         }
 
         if (setup.getPortletPermissions() != null) {
             LOG.info("Setting up " + setup.getPortletPermissions().getPortlet().size() + " roles");
-            SetupPermissions.setupPortletPermissions(setup.getPortletPermissions());
+            SetupPermissions.setupPortletPermissions(setup.getPortletPermissions(), companyId);
         }
 
         if (!setup.getFragmentCollection().isEmpty()) {
             LOG.info("Setting up " + setup.getFragmentCollection().size() + " fragment collections with fragments");
-            SetupFragments.setupFragments(setup.getFragmentCollection(), defaultUserId, groupId);
+            SetupFragments.setupFragments(setup.getFragmentCollection(), defaultUserId, groupId, companyId);
         }
 
         if (setup.getSites() != null) {
             LOG.info("Setting up " + setup.getSites().getSite().size() + " sites");
-            SetupSites.setupSites(setup.getSites().getSite(), null);
+            SetupSites.setupSites(setup.getSites().getSite(), null, companyId);
         }
 
         if (setup.getPageTemplates() != null) {
@@ -202,7 +217,7 @@ public final class LiferaySetup {
 
         if (!setup.getForm().isEmpty()) {
             LOG.info("Handling " + setup.getForm().size() + " forms");
-            SetupForms.handleForms(setup.getForm(), defaultUserId, groupId);
+            SetupForms.handleForms(setup.getForm(), defaultUserId, groupId, companyId);
         }
 
         LOG.info("Setup finished");
@@ -214,22 +229,22 @@ public final class LiferaySetup {
 
             if (otbd.getRoles() != null) {
                 List<eu.lundegaard.liferay.db.setup.domain.Role> roles = otbd.getRoles().getRole();
-                SetupRoles.deleteRoles(roles, otbd.getDeleteMethod());
+                SetupRoles.deleteRoles(roles, otbd.getDeleteMethod(), companyId);
             }
 
             if (otbd.getUsers() != null) {
                 List<eu.lundegaard.liferay.db.setup.domain.User> users = otbd.getUsers().getUser();
-                SetupUsers.deleteUsers(users, otbd.getDeleteMethod());
+                SetupUsers.deleteUsers(users, otbd.getDeleteMethod(), companyId);
             }
 
             if (otbd.getOrganizations() != null) {
                 List<Organization> organizations = otbd.getOrganizations().getOrganization();
-                SetupOrganizations.deleteOrganization(organizations, otbd.getDeleteMethod());
+                SetupOrganizations.deleteOrganization(organizations, otbd.getDeleteMethod(), companyId);
             }
 
             if (otbd.getCustomFields() != null) {
                 List<CustomFields.Field> customFields = otbd.getCustomFields().getField();
-                SetupCustomFields.deleteCustomFields(customFields, otbd.getDeleteMethod());
+                SetupCustomFields.deleteCustomFields(customFields, otbd.getDeleteMethod(), companyId);
             }
         }
     }
@@ -280,5 +295,9 @@ public final class LiferaySetup {
     public static long getRunAsUserId() {
 
         return runAsUserId;
+    }
+
+    public static long getCompanyId() {
+        return companyId;
     }
 }

@@ -24,6 +24,7 @@
 package eu.lundegaard.liferay.db.setup.core.util;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import com.liferay.document.library.kernel.exception.NoSuchFileEntryException;
 import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
@@ -34,6 +35,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 /**
  * This utility allows to manage documents of the documents and media library.
@@ -180,9 +182,15 @@ public final class DocumentUtil {
         }
         if (fileEntry == null) {
             try {
+                Date expDate = Date.valueOf(LocalDate.now().plusYears(4L));
+                Date reviewDate = Date.valueOf(LocalDate.now());
+                ServiceContext serviceContext = new ServiceContext();
+                serviceContext.setCompanyId(companyId);
+                serviceContext.setScopeGroupId(groupId);
+
                 fileEntry = DLAppLocalServiceUtil.addFileEntry(null, userId, repoId, folderId, fname,
-                        mtype, title, "", title, "Mimacom import", content, Date.valueOf("expirationDate"),
-                        Date.valueOf("reviewDate"), new ServiceContext());
+                        mtype, title, "", title, "Mimacom import", content, expDate,
+                        reviewDate, serviceContext);
             } catch (PortalException e) {
                 LOG.error("Error while trying to add file entry: " + title, e);
             } catch (SystemException e) {

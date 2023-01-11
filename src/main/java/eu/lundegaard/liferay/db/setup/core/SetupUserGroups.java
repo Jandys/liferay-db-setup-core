@@ -46,27 +46,26 @@ import java.util.Objects;
 public class SetupUserGroups {
 
     private static final Log LOG = LogFactoryUtil.getLog(SetupUserGroups.class);
-    private static final long COMPANY_ID = PortalUtil.getDefaultCompanyId();
 
     private SetupUserGroups() {
 
     }
 
-    public static void setupUserGroups(final List<UserGroup> userGroups) {
+    public static void setupUserGroups(final List<UserGroup> userGroups, long companyId) {
         final long userId = LiferaySetup.getRunAsUserId();
 
         for (UserGroup userGroup : userGroups) {
             com.liferay.portal.kernel.model.UserGroup liferayUserGroup = null;
             long liferayUserGroupId = -1;
             try {
-                liferayUserGroup = UserGroupLocalServiceUtil.getUserGroup(COMPANY_ID, userGroup.getName());
+                liferayUserGroup = UserGroupLocalServiceUtil.getUserGroup(companyId, userGroup.getName());
                 liferayUserGroupId = liferayUserGroup.getUserGroupId();
             } catch (PortalException e) {
                 LOG.info("UserGroup does not exists, creating new one for name: " + userGroup.getName());
             }
             if (liferayUserGroupId == -1) {
                 try {
-                    liferayUserGroup = UserGroupLocalServiceUtil.addUserGroup(userId, COMPANY_ID, userGroup.getName(),
+                    liferayUserGroup = UserGroupLocalServiceUtil.addUserGroup(userId, companyId, userGroup.getName(),
                             userGroup.getDescription(), new ServiceContext());
                 } catch (PortalException e) {
                     LOG.error("Can not create UserGroup with name: " + userGroup.getName(), e);
@@ -75,27 +74,27 @@ public class SetupUserGroups {
             }
 
             if (userGroup.getCustomFieldSetting() != null && !userGroup.getCustomFieldSetting().isEmpty()) {
-                setCustomFields(userId, liferayUserGroup, COMPANY_ID, userGroup.getCustomFieldSetting(), userGroup);
+                setCustomFields(userId, liferayUserGroup, companyId, userGroup.getCustomFieldSetting(), userGroup);
             }
 
             if (!userGroup.getRole().isEmpty()) {
                 LOG.info("Setting Roles for UserGroup.");
-                addRolesToUserGroup(userGroup, liferayUserGroup);
+                addRolesToUserGroup(userGroup, liferayUserGroup, companyId);
             }
 
             if (!userGroup.getUserAsMember().isEmpty()) {
                 LOG.info("Setting User Members.");
-                addUsersToUserGroup(userGroup.getUserAsMember(), liferayUserGroup);
+                addUsersToUserGroup(userGroup.getUserAsMember(), liferayUserGroup, companyId);
             }
 
         }
     }
 
     private static void addUsersToUserGroup(List<UserAsMember> usersAsMember,
-            com.liferay.portal.kernel.model.UserGroup liferayUserGroup) {
+            com.liferay.portal.kernel.model.UserGroup liferayUserGroup, long companyId) {
 
         for (UserAsMember member : usersAsMember) {
-            User user = UserLocalServiceUtil.fetchUserByScreenName(COMPANY_ID, member.getScreenName());
+            User user = UserLocalServiceUtil.fetchUserByScreenName(companyId, member.getScreenName());
             if (Objects.isNull(user)) {
                 LOG.error("Can not set user " + member.getScreenName()
                         + " as member of UserGroup. User does not exists...");
@@ -133,11 +132,11 @@ public class SetupUserGroups {
     }
 
     private static void addRolesToUserGroup(final UserGroup userGroup,
-            final com.liferay.portal.kernel.model.UserGroup liferayUserGroup) {
+            final com.liferay.portal.kernel.model.UserGroup liferayUserGroup, long companyId) {
         try {
             for (Role role : userGroup.getRole()) {
                 com.liferay.portal.kernel.model.Role liferayRole =
-                        RoleLocalServiceUtil.getRole(COMPANY_ID, role.getName());
+                        RoleLocalServiceUtil.getRole(companyId, role.getName());
                 String roleType = role.getType();
                 switch (roleType) {
                     case "portal":

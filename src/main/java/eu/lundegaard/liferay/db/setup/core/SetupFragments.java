@@ -51,9 +51,11 @@ public class SetupFragments {
 
     private SetupFragments() {}
 
-    public static void setupFragments(List<FragmentCollection> fragmentCollections, long userId, long groupId) {
+    public static void setupFragments(List<FragmentCollection> fragmentCollections, long userId, long groupId,
+            long companyId) {
         for (FragmentCollection fragmentCollection : fragmentCollections) {
             ServiceContext serviceContext = new ServiceContext();
+            serviceContext.setCompanyId(companyId);
 
             if (fragmentCollection.getSetupAction() == null) {
                 fragmentCollection.setSetupAction(CREATE);

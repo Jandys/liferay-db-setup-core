@@ -26,6 +26,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="1" maxOccurs="1" ref="runasuser"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="companyId"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -113,7 +114,8 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="runasuser" type="xs:string"></xs:element>
+    <xs:element name="runasuser" type="xs:string"/>
+    <xs:element name="companyId" type="xs:string"/>
 
     <xs:element name="organization">
         <xs:complexType>
