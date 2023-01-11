@@ -31,8 +31,10 @@ import java.util.Map;
 import java.util.Objects;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
+import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
+import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -50,6 +52,8 @@ import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.domain.AssociatedAssetType;
 import eu.lundegaard.liferay.db.setup.domain.Category;
 import eu.lundegaard.liferay.db.setup.domain.Site;
+import eu.lundegaard.liferay.db.setup.domain.Tag;
+import eu.lundegaard.liferay.db.setup.domain.Tags;
 import eu.lundegaard.liferay.db.setup.domain.Vocabulary;
 
 
@@ -160,7 +164,8 @@ public final class SetupCategorization {
             }
 
             long subtypePK = -1;
-            if (Objects.nonNull(type.getSubtypeStructureKey()) && !type.getSubtypeStructureKey().isEmpty()) { // has subtype
+            if (Objects.nonNull(type.getSubtypeStructureKey()) && !type.getSubtypeStructureKey()
+                    .isEmpty()) { // has subtype
                 try {
                     subtypePK = ResolverUtil.getStructureId(type.getSubtypeStructureKey(), groupId,
                             Class.forName(type.getClassName()), true);
@@ -274,5 +279,38 @@ public final class SetupCategorization {
             LOG.error("Error in creating category with name: " + category.getName(), e);
         }
 
+    }
+
+    public static void setupTags(final Site site, final long groupId)
+            throws SystemException {
+        Tags tags = site.getTags();
+        List<Tag> listOfTags = tags.getTag();
+
+        LOG.info("Setting up tags");
+
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(PortalUtil.getDefaultCompanyId());
+        serviceContext.setScopeGroupId(groupId);
+
+        for (Tag tag : listOfTags) {
+            setupTag(tag, groupId, serviceContext);
+        }
+    }
+
+    private static void setupTag(final Tag tag, final long groupId, ServiceContext serviceContext) {
+        AssetTag assetTag = AssetTagLocalServiceUtil.fetchTag(groupId, tag.getName());
+
+        if (assetTag != null) {
+            LOG.info(String.format("Tag named: '%s' already exists. Skipping.", tag.getName()));
+            return;
+        }
+
+        try {
+            LOG.info(String.format("Tag named: '%s' already exists. Skipping.", tag.getName()));
+            AssetTagLocalServiceUtil.addTag(LiferaySetup.getRunAsUserId(), groupId, tag.getName(), serviceContext);
+        } catch (PortalException e) {
+            LOG.error("Error while trying to create tag with name: "
+                    + tag.getName(), e);
+        }
     }
 }
