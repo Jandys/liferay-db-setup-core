@@ -50,14 +50,14 @@ public final class CustomFieldSettingUtil {
      * Auxiliary method that returns the expando value of a given expando field with
      * a given key.
      *
-     * @param resolverHint -
-     * @param runAsUserId -
-     * @param groupId -
-     * @param company -
-     * @param clazz -
-     * @param id -
-     * @param key The name of the expando field.
-     * @param value -
+     @param resolverHint a hint to be used when resolving the value
+     @param runAsUserId the user id to run as
+     @param groupId the id of the group
+     @param company the company id
+     @param clazz the class of the object to set the expando value for
+     @param id the id of the object to set the expando value for
+     @param key the key of the expando to set
+     @param value the value to set the expando to
      */
     // CHECKSTYLE:OFF
     public static void setExpandoValue(final String resolverHint, final long runAsUserId,
