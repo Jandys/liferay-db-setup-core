@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 public final class LiferaySetup {
 
     public static final String DESCRIPTION = "Created by setup module.";
@@ -107,6 +108,25 @@ public final class LiferaySetup {
         setupInputStreams(Arrays.asList(inputStream));
     }
 
+    /**
+     * This method is used to setup the portal using a given list of {@link Setup} objects.
+     * <p>
+     * For each {@link Setup} object in the list, the method performs the following steps:
+     * <ul>
+     * <li>Retrieves the {@link Configuration} object from the current Setup object</li>
+     * <li>Checks if companyId is present in the configuration and
+     * <p>
+     * if not it uses the default companyId</li>
+     * <li>Checks if runasuser is present in the configuration and
+     * <p>
+     * if not it uses the default administrator,
+     * if yes, it creates a permissionChecker for the specified user, sets it as the permissionChecker for
+     * the thread</li>
+     * <li>Calls the {@link #setupPortal(Setup)} method with the current Setup object to perform the actual setup process</li>
+     * </ul>
+     *
+     * @param setups a list of {@link Setup} objects to be used for the setup process
+     */
     public static void setup(final List<Setup> setups) {
 
         for (Setup setup : setups) {
@@ -150,6 +170,25 @@ public final class LiferaySetup {
         }
     }
 
+    /**
+
+     This method is used to classificare the different setup actions in {@link Setup} object.
+     It calls the required method for the setup step for each one of those fields:
+     <ul>
+     <li>deleteLiferayObjects - {@link #deleteObjects(List)} </li>
+     <li>customFields - {@link SetupCustomFields#setupExpandoFields(List, long)}</li>
+     <li>roles - {@link SetupRoles#setupRoles(List, long, long, long)}</li>
+     <li>users - {@link SetupUsers#setupUsers(List, long, long, long)}</li>
+     <li>organizations - {@link SetupOrganizations#setupOrganizations(List, com.liferay.portal.kernel.model.Organization, Group, long)}</li>
+     <li>userGroups - {@link SetupUserGroups#setupUserGroups(List, long)}</li>
+     <li>portletPermissions - {@link SetupPermissions#setupPortletPermissions(PortletPermissions, long)}</li>
+     <li>fragmentCollection - {@link SetupFragments#setupFragments(List, long, long, long)}</li>
+     <li>sites - {@link SetupSites#setupSites(List, Group, long)}</li>
+     <li>pageTemplates - {@link SetupPages#setupPageTemplates(PageTemplates, long, long, long)}</li>
+     <li>form - {@link SetupForms#handleForms(List, long, long, long)}</li>
+     </ul>
+     @param setup the {@link Setup} object to be used for the setup process
+     */
     public static void setupPortal(final Setup setup) {
 
         long defaultUserId = 0;
@@ -223,6 +262,10 @@ public final class LiferaySetup {
         LOG.info("Setup finished");
     }
 
+    /**
+     * This method Iterates through objects to be deleted and tries to delete them
+     * @param objectsToBeDeleted List of Objects to be deleted
+     */
     private static void deleteObjects(final List<ObjectsToBeDeleted> objectsToBeDeleted) {
 
         for (ObjectsToBeDeleted otbd : objectsToBeDeleted) {
@@ -254,7 +297,7 @@ public final class LiferaySetup {
      *
      * @param companyId company ID
      * @return Liferay {@link eu.lundegaard.liferay.db.setup.domain.User} instance,
-     *         if no user is found, returns null
+     * if no user is found, returns null
      * @throws Exception if cannot obtain permission checker
      */
     private static User getAdminUser(final long companyId) throws Exception {
@@ -282,6 +325,11 @@ public final class LiferaySetup {
     private static void setAdminPermissionCheckerForThread(final long companyId) throws Exception {
 
         User adminUser = getAdminUser(companyId);
+        if (adminUser == null) {
+            LOG.info("There is no admin user in given company: " + companyId);
+            return;
+        }
+
         PrincipalThreadLocal.setName(adminUser.getUserId());
         PermissionChecker permissionChecker;
         try {
@@ -293,7 +341,6 @@ public final class LiferaySetup {
     }
 
     public static long getRunAsUserId() {
-
         return runAsUserId;
     }
 
