@@ -243,7 +243,18 @@ public final class SetupCategorization {
                     assetCategory = ac;
                 }
             }
-        } catch (SystemException e) {
+
+            if (assetCategory == null) {
+                AssetVocabulary vocabulary = AssetVocabularyLocalServiceUtil.getVocabulary(vocabularyId);
+                existingCategories = vocabulary.getCategories();
+                for (AssetCategory ac : existingCategories) {
+                    if (ac.getName().equals(category.getName())) {
+                        assetCategory = ac;
+                    }
+                }
+            }
+
+        } catch (SystemException | PortalException e) {
             LOG.error("Error while trying to find category with name: " + category.getName(), e);
         }
 
