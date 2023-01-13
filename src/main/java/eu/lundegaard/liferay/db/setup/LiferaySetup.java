@@ -109,23 +109,26 @@ public final class LiferaySetup {
     }
 
     /**
-     * This method is used to setup the portal using a given list of {@link Setup} objects.
+     * This method is used to setup the portal using a given list of {@link Setup}
+     * objects.
      * <p>
-     * For each {@link Setup} object in the list, the method performs the following steps:
+     * For each {@link Setup} object in the list, the method performs the following
+     * steps:
      * <ul>
-     * <li>Retrieves the {@link Configuration} object from the current Setup object</li>
-     * <li>Checks if companyId is present in the configuration and
-     * <p>
-     * if not it uses the default companyId</li>
+     * <li>Retrieves the {@link Configuration} object from the current Setup
+     * object</li>
+     * <li>Gets companyId</li>
      * <li>Checks if runasuser is present in the configuration and
      * <p>
-     * if not it uses the default administrator,
-     * if yes, it creates a permissionChecker for the specified user, sets it as the permissionChecker for
-     * the thread</li>
-     * <li>Calls the {@link #setupPortal(Setup)} method with the current Setup object to perform the actual setup process</li>
+     * if not it uses the default administrator, if yes, it creates a
+     * permissionChecker for the specified user, sets it as the permissionChecker
+     * for the thread</li>
+     * <li>Calls the {@link #setupPortal(Setup)} method with the current Setup
+     * object to perform the actual setup process</li>
      * </ul>
      *
-     * @param setups a list of {@link Setup} objects to be used for the setup process
+     * @param setups a list of {@link Setup} objects to be used for the setup
+     *        process
      */
     public static void setup(final List<Setup> setups) {
 
@@ -133,18 +136,10 @@ public final class LiferaySetup {
             try {
                 Configuration configuration = setup.getConfiguration();
 
-                String company = configuration.getCompanyId();
-                if (company == null || company.isEmpty()) {
-                    companyId = PortalUtil.getDefaultCompanyId();
-                    LOG.info("Executing in " + companyId + " companyId");
-                } else {
-                    Company companyById = CompanyLocalServiceUtil.getCompanyById(Long.parseLong(company));
-                    if (companyById != null) {
-                        LOG.info("Company found: " + companyById.getShortName());
-                        companyId = companyById.getCompanyId();
-                    }
-                }
+                eu.lundegaard.liferay.db.setup.domain.Company company = configuration.getCompany();
+                companyId = getCompanyIdFromCompany(company);
 
+                LOG.info("Executing in " + companyId + " companyId");
 
                 String runAsUser = configuration.getRunasuser();
                 if (runAsUser == null || runAsUser.isEmpty()) {
@@ -171,23 +166,97 @@ public final class LiferaySetup {
     }
 
     /**
+     * Method is used to get value of companyId from configured company You can get
+     * such value by configuring:
+     * <ul>
+     * <li>companyId</li>
+     * <li>useCompanyMx</li>
+     * <li>companyWebId</li>
+     * <li>virtualHost</li>
+     * <li>logoId</li>
+     * </ul>
+     *
+     * @param company structure defined inside XSD
+     * @return company ID
+     * @throws PortalException is thrown if while fetching company error occures
+     */
+    public static long getCompanyIdFromCompany(eu.lundegaard.liferay.db.setup.domain.Company company)
+            throws PortalException {
+        if (company == null) {
+            return PortalUtil.getDefaultCompanyId();
+        }
 
-     This method is used to classificare the different setup actions in {@link Setup} object.
-     It calls the required method for the setup step for each one of those fields:
-     <ul>
-     <li>deleteLiferayObjects - {@link #deleteObjects(List)} </li>
-     <li>customFields - {@link SetupCustomFields#setupExpandoFields(List, long)}</li>
-     <li>roles - {@link SetupRoles#setupRoles(List, long, long, long)}</li>
-     <li>users - {@link SetupUsers#setupUsers(List, long, long, long)}</li>
-     <li>organizations - {@link SetupOrganizations#setupOrganizations(List, com.liferay.portal.kernel.model.Organization, Group, long)}</li>
-     <li>userGroups - {@link SetupUserGroups#setupUserGroups(List, long)}</li>
-     <li>portletPermissions - {@link SetupPermissions#setupPortletPermissions(PortletPermissions, long)}</li>
-     <li>fragmentCollection - {@link SetupFragments#setupFragments(List, long, long, long)}</li>
-     <li>sites - {@link SetupSites#setupSites(List, Group, long)}</li>
-     <li>pageTemplates - {@link SetupPages#setupPageTemplates(PageTemplates, long, long, long)}</li>
-     <li>form - {@link SetupForms#handleForms(List, long, long, long)}</li>
-     </ul>
-     @param setup the {@link Setup} object to be used for the setup process
+        String configuredValue = company.getValue();
+
+        if (company.isUseCompanyWebId()) {
+            Company companyByWebId = CompanyLocalServiceUtil.getCompanyByWebId(configuredValue);
+            if (companyByWebId != null) {
+                return companyByWebId.getCompanyId();
+            }
+        }
+
+        if (company.isUseCompanyMx()) {
+            Company companyByMx = CompanyLocalServiceUtil.getCompanyByMx(configuredValue);
+            if (companyByMx != null) {
+                return companyByMx.getCompanyId();
+            }
+        }
+
+        if (company.isUseVirtualHost()) {
+            Company companyByVirtualHost = CompanyLocalServiceUtil.getCompanyByVirtualHost(configuredValue);
+            if (companyByVirtualHost != null) {
+                return companyByVirtualHost.getCompanyId();
+            }
+        }
+
+        try {
+            long parsedConfiguredValue = Long.parseLong(configuredValue);
+
+            if (company.isUseLogoId()) {
+                Company companyByLogoId = CompanyLocalServiceUtil.getCompanyByLogoId(parsedConfiguredValue);
+                if (companyByLogoId != null) {
+                    return companyByLogoId.getCompanyId();
+                }
+            }
+
+            Company companyById = CompanyLocalServiceUtil.getCompanyById(parsedConfiguredValue);
+
+            if (companyById != null) {
+                return companyById.getCompanyId();
+            }
+
+        } catch (NumberFormatException e) {
+            LOG.error("Configured value for company could not be parsed.");
+        }
+
+        // if everything fails return default company
+        return PortalUtil.getDefaultCompanyId();
+    }
+
+    /**
+     * This method is used to classificare the different setup actions in
+     * {@link Setup} object. It calls the required method for the setup step for
+     * each one of those fields:
+     * <ul>
+     * <li>deleteLiferayObjects - {@link #deleteObjects(List)}</li>
+     * <li>customFields -
+     * {@link SetupCustomFields#setupExpandoFields(List, long)}</li>
+     * <li>roles - {@link SetupRoles#setupRoles(List, long, long, long)}</li>
+     * <li>users - {@link SetupUsers#setupUsers(List, long, long, long)}</li>
+     * <li>organizations -
+     * {@link SetupOrganizations#setupOrganizations(List, com.liferay.portal.kernel.model.Organization, Group, long)}</li>
+     * <li>userGroups - {@link SetupUserGroups#setupUserGroups(List, long)}</li>
+     * <li>portletPermissions -
+     * {@link SetupPermissions#setupPortletPermissions(PortletPermissions, long)}</li>
+     * <li>fragmentCollection -
+     * {@link SetupFragments#setupFragments(List, long, long, long)}</li>
+     * <li>sites - {@link SetupSites#setupSites(List, Group, long)}</li>
+     * <li>pageTemplates -
+     * {@link SetupPages#setupPageTemplates(PageTemplates, long, long, long)}</li>
+     * <li>form - {@link SetupForms#handleForms(List, long, long, long)}</li>
+     * </ul>
+     *
+     * @param setup the {@link Setup} object to be used for the setup process
      */
     public static void setupPortal(final Setup setup) {
 
@@ -264,6 +333,7 @@ public final class LiferaySetup {
 
     /**
      * This method Iterates through objects to be deleted and tries to delete them
+     *
      * @param objectsToBeDeleted List of Objects to be deleted
      */
     private static void deleteObjects(final List<ObjectsToBeDeleted> objectsToBeDeleted) {
@@ -297,7 +367,7 @@ public final class LiferaySetup {
      *
      * @param companyId company ID
      * @return Liferay {@link eu.lundegaard.liferay.db.setup.domain.User} instance,
-     * if no user is found, returns null
+     *         if no user is found, returns null
      * @throws Exception if cannot obtain permission checker
      */
     private static User getAdminUser(final long companyId) throws Exception {

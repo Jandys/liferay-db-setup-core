@@ -26,7 +26,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="1" maxOccurs="1" ref="runasuser"/>
-                <xs:element minOccurs="0" maxOccurs="1" ref="companyId"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="company"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -115,7 +115,18 @@
     </xs:element>
 
     <xs:element name="runasuser" type="xs:string"/>
-    <xs:element name="companyId" type="xs:string"/>
+    <xs:element name="company">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string" >
+                    <xs:attribute name="useCompanyWebId" use="optional" type="xs:boolean" default="false"/>
+                    <xs:attribute name="useCompanyMx" use="optional" type="xs:boolean" default="false"/>
+                    <xs:attribute name="useVirtualHost" use="optional" type="xs:boolean" default="false"/>
+                    <xs:attribute name="useLogoId" use="optional" type="xs:boolean" default="false"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
 
     <xs:element name="organization">
         <xs:complexType>
