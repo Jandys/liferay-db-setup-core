@@ -47,6 +47,12 @@ public final class SetupCustomFields {
 
     }
 
+    /**
+     * Sets up custom expando fields for a site.
+     *
+     * @param fields the list of custom fields to set up
+     * @param companyId the company ID of the site
+     */
     public static void setupExpandoFields(final List<CustomFields.Field> fields, long companyId) {
 
         for (CustomFields.Field field : fields) {
@@ -85,6 +91,13 @@ public final class SetupCustomFields {
         return all;
     }
 
+    /**
+     * Adds a custom attribute to an expando bridge.
+     *
+     * @param bridge the expando bridge to add the attribute to
+     * @param field the custom field to add as an attribute
+     * @param companyId the company ID of the site
+     */
     private static void addAttributeToExpandoBridge(final ExpandoBridge bridge,
             final CustomFields.Field field, long companyId) {
 
@@ -112,6 +125,18 @@ public final class SetupCustomFields {
         }
     }
 
+    /**
+     * This method sets custom field permissions on an ExpandoBridge for a specific
+     * field name.
+     *
+     * @param rolePermissions a list of role permissions to be set on the field
+     * @param bridge the expando bridge on which the field is defined
+     * @param fieldName the name of the field on which to set the permissions
+     * @param companyId the id of the company for which the permissions are being
+     *        set
+     * @throws SystemException if an error occurs while trying to set the
+     *         permissions
+     */
     private static void setCustomFieldPermission(final List<RolePermission> rolePermissions,
             final ExpandoBridge bridge, final String fieldName, long companyId) throws SystemException {
 
@@ -153,6 +178,28 @@ public final class SetupCustomFields {
         deleteCustomFields(Arrays.asList(customField), deleteMethod, companyId);
     }
 
+
+    /**
+     * Method to delete the custom fields based on the deleteMethod.
+     *
+     * <p>
+     * </p>
+     * <p>
+     * If deleteMethod is "excludeListed", the method will delete all custom fields
+     * of the specified className in the list but the listed fields.
+     * </p>
+     * <p>
+     * If deleteMethod is "onlyListed", the method will delete only the custom
+     * fields that are listed in the list.
+     * </p>
+     *
+     * @param customFields List of custom fields to be deleted
+     * @param deleteMethod String value that specifies how to delete the fields. it
+     *        can take two values: "excludeListed" or "onlyListed"
+     * @param companyId id of the company
+     * @throws SystemException
+     * @throws PortalException
+     */
     public static void deleteCustomFields(final List<CustomFields.Field> customFields,
             final String deleteMethod, long companyId) {
 
@@ -187,6 +234,12 @@ public final class SetupCustomFields {
         }
     }
 
+    /**
+     * This method maps Expando name to corresponding int value.
+     *
+     * @param name String name (eq. string, boolean, int, date, long)
+     * @return corresponding int value.
+     */
     private static int getFieldTypeKey(final String name) {
 
         if ("stringArray".equals(name)) {
@@ -217,6 +270,12 @@ public final class SetupCustomFields {
         return -1;
     }
 
+    /**
+     * Method maps List of {@link CustomFields.Field} to List of its names
+     *
+     * @param customFields {@link List} of {@link CustomFields.Field} custom fields
+     * @return List of mapped names
+     */
     private static List<String> attributeNamesList(final List<CustomFields.Field> customFields) {
 
         List<String> names = new ArrayList<>();
@@ -228,6 +287,12 @@ public final class SetupCustomFields {
         return names;
     }
 
+    /**
+     * This method maps Expando Index Type to corresponding int value.
+     *
+     * @param indexed String type (none, text, keyword)
+     * @return corresponding int value.
+     */
     private static int getIndexedType(final String indexed) {
 
         if ("none".equals(indexed)) {
@@ -242,6 +307,12 @@ public final class SetupCustomFields {
         }
     }
 
+    /**
+     * This method maps Expando display Type to corresponding constant value.
+     *
+     * @param displayType String type (checkbox, radio, selection-list, text-box)
+     * @return corresponding constant.
+     */
     private static String getDisplayType(final String displayType) {
         if ("checkbox".equals(displayType)) {
             return ExpandoColumnConstants.PROPERTY_DISPLAY_TYPE_CHECKBOX;
@@ -257,6 +328,13 @@ public final class SetupCustomFields {
         }
     }
 
+    /**
+     * This method converts List of {@link CustomFields.Field} to hashMap
+     *
+     * @param objects List that should be remapped
+     * @return Hash map where key is name of the {@link CustomFields.Field} and
+     *         value is Custom Field itself.
+     */
     private static Map<String, CustomFields.Field> convertCustomFieldListToHashMap(
             final List<CustomFields.Field> objects) {
 

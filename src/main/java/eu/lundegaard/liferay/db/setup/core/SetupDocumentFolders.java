@@ -68,6 +68,13 @@ public final class SetupDocumentFolders {
 
     }
 
+    /**
+     * This method sets up document folders for a given Site group.
+     *
+     * @param group the Site group object
+     * @param groupId the ID of the group
+     * @param companyId the ID of the company
+     */
     public static void setupDocumentFolders(final Site group, final long groupId, final long companyId) {
         for (DocumentFolder df : group.getDocumentFolder()) {
             boolean create = df.isCreateIfNotExists();

@@ -65,8 +65,10 @@ public class SetupUserGroups {
             }
             if (liferayUserGroupId == -1) {
                 try {
+                    ServiceContext serviceContext = new ServiceContext();
+                    serviceContext.setCompanyId(companyId);
                     liferayUserGroup = UserGroupLocalServiceUtil.addUserGroup(userId, companyId, userGroup.getName(),
-                            userGroup.getDescription(), new ServiceContext());
+                            userGroup.getDescription(), serviceContext);
                 } catch (PortalException e) {
                     LOG.error("Can not create UserGroup with name: " + userGroup.getName(), e);
                     continue;

@@ -70,6 +70,15 @@ public final class SetupCategorization {
 
     }
 
+    /**
+     * Sets up vocabularies for a site.
+     *
+     * @param site the site for which to set up vocabularies
+     * @param groupId the group ID of the site
+     * @param companyId the company ID of the site
+     * @throws SystemException if a system exception occurred
+     * @throws PortalException if a portal exception occurred
+     */
     public static void setupVocabularies(final Site site, final long groupId, long companyId)
             throws SystemException, PortalException {
         List<Vocabulary> vocabularies = site.getVocabulary();
@@ -83,6 +92,15 @@ public final class SetupCategorization {
         }
     }
 
+    /**
+     * Sets up a vocabulary for a site.
+     *
+     * @param vocabulary the vocabulary to set up
+     * @param site the site for which to set up the vocabulary
+     * @param groupId the group ID of the site
+     * @param defaultLocale the default locale of the site
+     * @param companyId the company ID of the site
+     */
     private static void setupVocabulary(final Vocabulary vocabulary, final Site site, final long groupId,
             final Locale defaultLocale, long companyId) {
 
@@ -141,6 +159,13 @@ public final class SetupCategorization {
         }
     }
 
+    /**
+     * Compose settings for a vocabulary.
+     *
+     * @param vocabulary the vocabulary for which to compose settings
+     * @param groupId the group ID of the site
+     * @return the settings for the vocabulary as a string
+     */
     private static String composeVocabularySettings(Vocabulary vocabulary, final long groupId) {
         AssetVocabularySettingsHelper assetVocabularySettingsHelper = new AssetVocabularySettingsHelper();
         assetVocabularySettingsHelper.setMultiValued(vocabulary.isMultiValued());
@@ -205,6 +230,16 @@ public final class SetupCategorization {
         return assetVocabularySettingsHelper.toString();
     }
 
+    /**
+     * Sets up categories for a vocabulary.
+     *
+     * @param vocabularyId the ID of the vocabulary for which to set up categories
+     * @param groupId the group ID of the site
+     * @param parentId the parent ID of the category
+     * @param categories the list of categories to set up
+     * @param defaultLocale the default locale of the site
+     * @param companyId the company ID of the site
+     */
     private static void setupCategories(final long vocabularyId, final long groupId,
             final long parentId, final List<Category> categories, final Locale defaultLocale, long companyId) {
         LOG.info("Setting up categories for parentId:" + parentId);
@@ -216,6 +251,16 @@ public final class SetupCategorization {
         }
     }
 
+    /**
+     * Sets up a category for a vocabulary.
+     *
+     * @param category the category to set up
+     * @param vocabularyId the ID of the vocabulary for which to set up the category
+     * @param groupId the group ID of the site
+     * @param defaultLocale the default locale of the site
+     * @param parentCategoryId the parent category ID
+     * @param companyId the company ID of the site
+     */
     private static void setupCategory(final Category category, final long vocabularyId,
             final long groupId, final Locale defaultLocale, final long parentCategoryId, long companyId) {
 
@@ -292,6 +337,14 @@ public final class SetupCategorization {
 
     }
 
+    /**
+     * Sets up tags for a site.
+     *
+     * @param site the site for which to set up tags
+     * @param groupId the group ID of the site
+     * @param companyId the company ID of the site
+     * @throws SystemException if a system exception occurred
+     */
     public static void setupTags(final Site site, final long groupId, long companyId)
             throws SystemException {
         Tags tags = site.getTags();
@@ -313,6 +366,13 @@ public final class SetupCategorization {
         }
     }
 
+    /**
+     * Sets up a tag for a site.
+     *
+     * @param tag the tag to set up
+     * @param groupId the group ID of the site
+     * @param serviceContext the service context for the tag
+     */
     private static void setupTag(final Tag tag, final long groupId, ServiceContext serviceContext) {
         AssetTag assetTag = AssetTagLocalServiceUtil.fetchTag(groupId, tag.getName());
 
