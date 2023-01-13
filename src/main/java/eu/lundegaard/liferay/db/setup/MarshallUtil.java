@@ -60,11 +60,12 @@ public final class MarshallUtil {
 
     /**
      * This method is used to unmarshall incoming input stream into {@link Setup}
-     @param stream the InputStream to be unmarshalled
-     @return the unmarshalled Setup object
-     @throws JAXBException if an error occurs while unmarshalling
-     @throws ParserConfigurationException if a parser configuration error occurs
-     @throws SAXException if a SAX error occurs
+     * 
+     * @param stream the InputStream to be unmarshalled
+     * @return the unmarshalled Setup object
+     * @throws JAXBException if an error occurs while unmarshalling
+     * @throws ParserConfigurationException if a parser configuration error occurs
+     * @throws SAXException if a SAX error occurs
      */
     public static Setup unmarshall(final InputStream stream)
             throws JAXBException, ParserConfigurationException, SAXException {

@@ -64,6 +64,7 @@ import eu.lundegaard.liferay.db.setup.core.util.TaggingUtil;
 import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
 import eu.lundegaard.liferay.db.setup.core.util.WebFolderUtil;
 import eu.lundegaard.liferay.db.setup.domain.*;
+import eu.lundegaard.liferay.db.setup.wrapper.ClassNameLocalServiceUtilWrapper;
 import org.dom4j.tree.DefaultText;
 import org.dom4j.util.IndexedElement;
 import java.io.IOException;
@@ -75,8 +76,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Created by mapa, guno,
- * Updated by: Jakub Jandak, jakub.jandak@lundegaard.eu, 2023
+ * Created by mapa, guno, Updated by: Jakub Jandak, jakub.jandak@lundegaard.eu,
+ * 2023
  */
 public final class SetupArticles {
 
@@ -127,19 +128,23 @@ public final class SetupArticles {
     }
 
     /**
-     This method is used to call setup actions on the {@link Site} object and groupId, companyId.
-     It classifies into:
-     <ul>
-        <li>Article Structure</li>
-        <li>DDL Structure</li>
-        <li>Article Template</li>
-     </ul>
-
-     If any exception occurs, it logs the error.
-     @param site the Site object containing the structures and templates to be added
-     @param groupId the group id where the structures and templates should be added
-     @param companyId the company id of the group
-     @throws PortalException if an error occurs while adding the structures or templates
+     * This method is used to call setup actions on the {@link Site} object and
+     * groupId, companyId. It classifies into:
+     * <ul>
+     * <li>Article Structure</li>
+     * <li>DDL Structure</li>
+     * <li>Article Template</li>
+     * </ul>
+     * 
+     * If any exception occurs, it logs the error.
+     * 
+     * @param site the Site object containing the structures and templates to be
+     *        added
+     * @param groupId the group id where the structures and templates should be
+     *        added
+     * @param companyId the company id of the group
+     * @throws PortalException if an error occurs while adding the structures or
+     *         templates
      */
     public static void setupSiteStructuresAndTemplates(final Site site, final long groupId, final long companyId)
             throws PortalException {
@@ -219,18 +224,21 @@ public final class SetupArticles {
     }
 
     /**
-     The method addDDMStructure adds a new structure to the Liferay portal based on the provided
-     structure information. The structure must be in JSON format and it is expected to have certain attributes
-     such as name, key, parent, etc. The method will also set up the permissions for the structure based on the
-     rolePermissions provided in the structure.
-     @param structure the structure to be added
-     @param groupId the groupId to which the structure will belong
-     @param classNameId the classNameId of the structure, this is typically the class name of the object associated with the structure
-     @param companyId the companyId to which the structure will belong
-     @throws SystemException thrown when there is a system error
-     @throws PortalException thrown when there is a portal error
-     @throws IOException thrown when there is an error reading the structure file
-     @throws URISyntaxException thrown when there is an error with the URI syntax
+     * The method addDDMStructure adds a new structure to the Liferay portal based
+     * on the provided structure information. The structure must be in JSON format
+     * and it is expected to have certain attributes such as name, key, parent, etc.
+     * The method will also set up the permissions for the structure based on the
+     * rolePermissions provided in the structure.
+     * 
+     * @param structure the structure to be added
+     * @param groupId the groupId to which the structure will belong
+     * @param classNameId the classNameId of the structure, this is typically the
+     *        class name of the object associated with the structure
+     * @param companyId the companyId to which the structure will belong
+     * @throws SystemException thrown when there is a system error
+     * @throws PortalException thrown when there is a portal error
+     * @throws IOException thrown when there is an error reading the structure file
+     * @throws URISyntaxException thrown when there is an error with the URI syntax
      */
     public static void addDDMStructure(final Structure structure, final long groupId,
             final long classNameId, final long companyId)
@@ -324,14 +332,14 @@ public final class SetupArticles {
     }
 
     /**
-     This method adds a DDMTemplate to the Liferay portal
-
-     @param template The article template to be added
-     @param groupId The groupId where the template will be added
-     @throws SystemException if a system exception occurred
-     @throws PortalException if a portal exception occurred
-     @throws IOException if an IO exception occurred
-     @throws URISyntaxException if URI syntax exception occurred
+     * This method adds a DDMTemplate to the Liferay portal
+     * 
+     * @param template The article template to be added
+     * @param groupId The groupId where the template will be added
+     * @throws SystemException if a system exception occurred
+     * @throws PortalException if a portal exception occurred
+     * @throws IOException if an IO exception occurred
+     * @throws URISyntaxException if URI syntax exception occurred
      */
     public static void addDDMTemplate(final ArticleTemplate template, final long groupId)
             throws SystemException, PortalException, IOException, URISyntaxException {
@@ -397,14 +405,17 @@ public final class SetupArticles {
     }
 
     /**
-     This method adds an ADT (Asset Display Template) to Liferay portal.
-
-     @param template an {@link Adt} object representing the ADT to be added
-     @param groupId the ID of the group to which the ADT should be added
-     @throws SystemException if there is a problem accessing Liferay's template services
-     @throws PortalException if there is a problem with the group or template information
-     @throws IOException if there is a problem reading the ADT's script file
-     @throws URISyntaxException if there is a problem with the file path of the ADT's script
+     * This method adds an ADT (Asset Display Template) to Liferay portal.
+     * 
+     * @param template an {@link Adt} object representing the ADT to be added
+     * @param groupId the ID of the group to which the ADT should be added
+     * @throws SystemException if there is a problem accessing Liferay's template
+     *         services
+     * @throws PortalException if there is a problem with the group or template
+     *         information
+     * @throws IOException if there is a problem reading the ADT's script file
+     * @throws URISyntaxException if there is a problem with the file path of the
+     *         ADT's script
      */
     public static void addDDMTemplate(final Adt template, final long groupId)
             throws SystemException, PortalException, IOException, URISyntaxException {
@@ -461,11 +472,12 @@ public final class SetupArticles {
     }
 
     /**
-     * This method creates a journal article in Liferay.
-     * The method reads the content of the article from the file specified in the path attribute of the Article.
-     * And creates article with such content.
+     * This method creates a journal article in Liferay. The method reads the
+     * content of the article from the file specified in the path attribute of the
+     * Article. And creates article with such content.
      *
-     * @param article object that contains information about the article such as its title, path, and structure key.
+     * @param article object that contains information about the article such as its
+     *        title, path, and structure key.
      * @param groupId specifies the group the article belongs to.
      * @param companyId that specifies the company the article belongs to.
      */
@@ -583,13 +595,13 @@ public final class SetupArticles {
     }
 
     /**
-     This method adds a DDL Record Set to the specified groupId. If a DDL Record Set with the same key already exists,
-     it will be overwritten.
-
-     @param recordSet The DDL Record Set to add
-     @param groupId The groupId to add the DDL Record Set to
-     @throws SystemException if a system exception occurred
-     @throws PortalException if a portal exception occurred
+     * This method adds a DDL Record Set to the specified groupId. If a DDL Record
+     * Set with the same key already exists, it will be overwritten.
+     * 
+     * @param recordSet The DDL Record Set to add
+     * @param groupId The groupId to add the DDL Record Set to
+     * @throws SystemException if a system exception occurred
+     * @throws PortalException if a portal exception occurred
      */
     private static void addDDLRecordSet(final DdlRecordset recordSet, final long groupId)
             throws SystemException, PortalException {
@@ -627,14 +639,16 @@ public final class SetupArticles {
     }
 
     /**
-     This method process the related assets for a Journal Article.
-     It adds or clears the related assets specified in the Article object.
-
-     @param article the Article object that contains the related assets information
-     @param ja the JournalArticle object that the related assets will be added or cleared from
-     @param runAsUserId the user id used to perform the action
-     @param groupId the id of the group the assets belong to
-     @param companyId the id of the company the assets belong to
+     * This method process the related assets for a Journal Article. It adds or
+     * clears the related assets specified in the Article object.
+     * 
+     * @param article the Article object that contains the related assets
+     *        information
+     * @param ja the JournalArticle object that the related assets will be added or
+     *        cleared from
+     * @param runAsUserId the user id used to perform the action
+     * @param groupId the id of the group the assets belong to
+     * @param companyId the id of the company the assets belong to
      */
     public static void processRelatedAssets(final Article article, final JournalArticle ja,
             final long runAsUserId, final long groupId, final long companyId) {
