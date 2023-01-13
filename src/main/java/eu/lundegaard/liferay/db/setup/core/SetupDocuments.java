@@ -75,6 +75,18 @@ public final class SetupDocuments {
 
     }
 
+    /**
+     * This method sets up site documents for a given Site object. It iterates
+     * through each document in the Site object, and checks if the document already
+     * exists. If it does, the method updates the document's content. If it does not
+     * exist, the method creates a new document. Additionally, this method also
+     * updates the permissions for each document based on the role permissions
+     * specified in the Site object.
+     *
+     * @param site the Site object that contains the list of documents to be set up
+     * @param groupId the ID of the group
+     * @param company the ID of the company
+     */
     public static void setupSiteDocuments(final Site site,
             final long groupId, final long company) {
         for (Document doc : site.getDocument()) {

@@ -253,7 +253,7 @@ public final class LiferaySetup {
      * <li>sites - {@link SetupSites#setupSites(List, Group, long)}</li>
      * <li>pageTemplates -
      * {@link SetupPages#setupPageTemplates(PageTemplates, long, long, long)}</li>
-     * <li>form - {@link SetupForms#handleForms(List, long, long, long)}</li>
+     * <li>form - {@link SetupForms#setupForms(List, long, long, long)}</li>
      * </ul>
      *
      * @param setup the {@link Setup} object to be used for the setup process
@@ -325,7 +325,7 @@ public final class LiferaySetup {
 
         if (!setup.getForm().isEmpty()) {
             LOG.info("Handling " + setup.getForm().size() + " forms");
-            SetupForms.handleForms(setup.getForm(), defaultUserId, groupId, companyId);
+            SetupForms.setupForms(setup.getForm(), defaultUserId, groupId, companyId);
         }
 
         LOG.info("Setup finished");
