@@ -34,7 +34,9 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
+import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
+import eu.lundegaard.liferay.db.setup.core.support.ClassNameLocalServiceUtilWrapper;
 import eu.lundegaard.liferay.db.setup.domain.Form;
 import eu.lundegaard.liferay.db.setup.domain.FormName;
 import java.util.List;
@@ -71,7 +73,7 @@ public final class SetupForms {
             String formName = getFirstFormName(form.getFormName());
             LOG.info("Executing " + form.getSetupAction().toString() + " on form " + formName);
 
-            long structureClassNameId = ClassNameLocalServiceUtil.getClassNameId(DDMFormInstance.class);
+            long structureClassNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(DDMFormInstance.class);
 
             switch (form.getSetupAction()) {
                 case CREATE:
@@ -163,6 +165,25 @@ public final class SetupForms {
             ServiceContext serviceContext = new ServiceContext();
             serviceContext.setCompanyId(companyId);
 
+
+            //            DDMFORM ddmForm = DDMFormInstanceLocalServiceUtil
+            //
+            //              DDMStructure structure =
+            //              DDMStructureLocalServiceUtil.addStructure(userId, groupId, 0, formName,
+            //                         ddmForm, ddmFormLayout, null, null, 0, null);
+            //
+            //              // Create the form instance
+            //              DDMFormInstanceLocalServiceUtil.addFormInstance(userId, groupId,
+            //                         structure.getStructureId(), formName, formName, null, null, 0, 0, null,
+            //              null);
+            //
+            //              // Create the structure layout
+            //              DDMStructureLayoutLocalServiceUtil.addStructureLayout(userId, groupId,
+            //                         structure.getStructureId(), ddmFormLayout, null); } catch (PortalException e)
+            //              { e.printStackTrace(); }
+
+
+
             DDMStructure ddmStructure = DDMStructureLocalServiceUtil.updateStructure(
                     userId,
                     oldStructureId,
@@ -200,31 +221,31 @@ public final class SetupForms {
              * test this
              *
              *
-             * import com.liferay.dynamic.data.mapping.model.DDMForm;
-             * import com.liferay.dynamic.data.mapping.model.DDMFormLayout;
-             * import com.liferay.dynamic.data.mapping.model.DDMStructure;
-             * import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
-             * import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalServiceUtil;
-             * import com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalServiceUtil;
+             * import com.liferay.dynamic.data.mapping.model.DDMForm; import
+             * com.liferay.dynamic.data.mapping.model.DDMFormLayout; import
+             * com.liferay.dynamic.data.mapping.model.DDMStructure; import
+             * com.liferay.dynamic.data.mapping.model.DDMStructureLayout; import
+             * com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalServiceUtil;
+             * import
+             * com.liferay.dynamic.data.mapping.service.DDMStructureLayoutLocalServiceUtil;
              * import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
              * import com.liferay.portal.kernel.exception.PortalException;
              *
-             * public class LiferayForms {
-             *     public void createForm(long groupId, long userId, String formName, DDMForm ddmForm, DDMFormLayout ddmFormLayout) {
-             *         try {
-             *             // Create the structure
-             *             DDMStructure structure = DDMStructureLocalServiceUtil.addStructure(userId, groupId, 0, formName, ddmForm, ddmFormLayout, null, null, 0, null);
+             * public class LiferayForms { public void createForm(long groupId, long userId,
+             * String formName, DDMForm ddmForm, DDMFormLayout ddmFormLayout) { try { //
+             * Create the structure DDMStructure structure =
+             * DDMStructureLocalServiceUtil.addStructure(userId, groupId, 0, formName,
+             * ddmForm, ddmFormLayout, null, null, 0, null);
              *
-             *             // Create the form instance
-             *             DDMFormInstanceLocalServiceUtil.addFormInstance(userId, groupId, structure.getStructureId(), formName, formName, null, null, 0, 0, null, null);
+             * // Create the form instance
+             * DDMFormInstanceLocalServiceUtil.addFormInstance(userId, groupId,
+             * structure.getStructureId(), formName, formName, null, null, 0, 0, null,
+             * null);
              *
-             *             // Create the structure layout
-             *             DDMStructureLayoutLocalServiceUtil.addStructureLayout(userId, groupId, structure.getStructureId(), ddmFormLayout, null);
-             *         } catch (PortalException e) {
-             *             e.printStackTrace();
-             *         }
-             *     }
-             * }
+             * // Create the structure layout
+             * DDMStructureLayoutLocalServiceUtil.addStructureLayout(userId, groupId,
+             * structure.getStructureId(), ddmFormLayout, null); } catch (PortalException e)
+             * { e.printStackTrace(); } } }
              *
              *
              *

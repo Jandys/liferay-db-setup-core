@@ -32,6 +32,7 @@ import com.liferay.expando.kernel.service.ExpandoValueLocalServiceUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
+import eu.lundegaard.liferay.db.setup.core.support.ClassNameLocalServiceUtilWrapper;
 
 /**
  * Utility for setting a custom field.
@@ -72,7 +73,7 @@ public final class CustomFieldSettingUtil {
             valueCopy = ResolverUtil.lookupAll(runAsUserId, groupId, company, valueCopy,
                     resolverHint);
             if (ev == null) {
-                long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz.getName());
+                long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz.getName());
 
                 ExpandoTable expandoTable = ExpandoTableLocalServiceUtil.getTable(company,
                         classNameId, "CUSTOM_FIELDS");
