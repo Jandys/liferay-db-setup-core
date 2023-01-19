@@ -12,7 +12,7 @@
 
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.10-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Liferay Portal DB Setup core</name>
@@ -81,7 +81,6 @@
         <dependency>
             <groupId>com.liferay.portal</groupId>
             <artifactId>com.liferay.portal.kernel</artifactId>
-            <version>90.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.liferay</groupId>
@@ -94,6 +93,50 @@
             <artifactId>dom4j</artifactId>
             <version>1.1</version>
         </dependency>
+
+
+
+        <!--   TESTS     -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.lang</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--        <dependency>-->
+<!--            <groupId>net.bytebuddy</groupId>-->
+<!--            <artifactId>byte-buddy</artifactId>-->
+<!--            <version>1.10.13</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>net.bytebuddy</groupId>-->
+<!--            <artifactId>byte-buddy-agent</artifactId>-->
+<!--            <version>1.10.13</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.objenesis</groupId>-->
+<!--            <artifactId>objenesis</artifactId>-->
+<!--            <version>3.0.1</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -168,6 +211,48 @@
                         <jspf>DYNASCRIPT_STYLE</jspf>
                     </mapping>
                 </configuration>
+            </plugin>
+
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>module-info-properties</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>eu.lundegaard.commons</groupId>
+                                    <artifactId>build-support</artifactId>
+                                    <version>${lundegaard.build.support.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/generated-sources/module-info</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <includes>**/module-info.properties</includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>analyze</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+
+                            <!-- ignore petra.lang for "used declared", is used for correctly working tests-->
+                            <ignoredDependencies>
+                                <ignoredDependency>com.liferay:com.liferay.petra.lang:jar:5.1.2</ignoredDependency>
+                            </ignoredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>

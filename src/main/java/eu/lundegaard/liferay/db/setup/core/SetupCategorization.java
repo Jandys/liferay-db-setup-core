@@ -44,10 +44,10 @@ import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portlet.asset.util.AssetVocabularySettingsHelper;
 import eu.lundegaard.liferay.db.setup.LiferaySetup;
 import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
+import eu.lundegaard.liferay.db.setup.core.support.PortalUtilFacade;
 import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.domain.AssociatedAssetType;
 import eu.lundegaard.liferay.db.setup.domain.Category;
@@ -83,7 +83,7 @@ public final class SetupCategorization {
             throws SystemException, PortalException {
         List<Vocabulary> vocabularies = site.getVocabulary();
 
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
 
         LOG.info("Setting up vocabularies");
 

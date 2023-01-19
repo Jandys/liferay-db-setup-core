@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import eu.lundegaard.liferay.db.setup.core.support.ClassNameLocalServiceUtilWrapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -806,7 +807,7 @@ public final class ResolverUtil {
     public static long getStructureId(final String structureKey, final long groupId,
             final Class clazz, boolean includeAncestorStructures) throws SystemException, PortalException {
 
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz);
         DDMStructure structure = DDMStructureLocalServiceUtil.getStructure(groupId, classNameId,
                 structureKey, includeAncestorStructures);
         return structure.getStructureId();
@@ -815,7 +816,7 @@ public final class ResolverUtil {
     public static String getStructureUUID(final String structureKey, final long groupId,
             final Class clazz) throws SystemException, PortalException {
 
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz);
         DDMStructure structure = DDMStructureLocalServiceUtil.getStructure(groupId, classNameId,
                 structureKey);
         return structure.getUuid();
@@ -824,7 +825,7 @@ public final class ResolverUtil {
     public static long getTemplateId(final String templateKey, final long groupId,
             final Class clazz) throws SystemException, PortalException {
 
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz);
 
         DDMTemplate template = DDMTemplateLocalServiceUtil.getTemplate(groupId, classNameId,
                 templateKey);
@@ -897,7 +898,7 @@ public final class ResolverUtil {
     }
 
     private static long getClassId(final String clazzName) {
-        long id = ClassNameLocalServiceUtil.getClassNameId(clazzName);
+        long id = ClassNameLocalServiceUtilWrapper.getClassNameId(clazzName);
         return id;
     }
 }

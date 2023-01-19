@@ -49,6 +49,18 @@ public final class SetupPermissions {
 
     }
 
+    /**
+     * Sets up permissions for a PortletPermissions object.
+     * This method iterates through the Portlet objects in the given PortletPermissions object,
+     * deletes any existing permissions for each Portlet, and sets new permissions based on
+     * the actions defined for each role in the PortletPermissions object. The new permissions
+     * are set using the Liferay ResourcePermissionLocalServiceUtil.setResourcePermissions method.
+     * If any exceptions are thrown while setting the permissions, they will be logged using the
+     * logger and the method will continue with the next Portlet in the PortletPermissions object.
+     *
+     * @param portletPermissions The PortletPermissions object to set up permissions for.
+     * @param companyId          The ID of the company for which to set up permissions.
+     */
     public static void setupPortletPermissions(final PortletPermissions portletPermissions, long companyId) {
 
         for (PortletPermissions.Portlet portlet : portletPermissions.getPortlet()) {
@@ -180,6 +192,26 @@ public final class SetupPermissions {
                 defaultPermissions);
     }
 
+    /**
+     Update permissions for an element of a given class.
+     <p>
+     This method updates the permissions for an element of a given class. If the rolePermissions parameter is not null,
+     it will be used to set the permissions for the element. The rolePermissions parameter should be an object containing
+     information about the roles and actions that should have permissions for the element. If the rolePermissions is null
+     or the rolePermissions object does not contain any rolePermission, the defaultPermissions map will be used to set the
+     permissions. The method uses a SetupPermissions helper class to add and remove permissions. If any exceptions are thrown
+     while setting the permissions, they will be logged using the logger and the method will continue with the next role.
+     </p>
+
+     @param locationHint A hint about the location of the element (used for logging)
+     @param groupId The ID of the group the element belongs to
+     @param companyId The ID of the company the element belongs to
+     @param elementId The ID of the element
+     @param className The fully-qualified class name of the element
+     @param rolePermissions The role-based permissions to set for the element, or null to use default permissions
+     @param defaultPermissions A map of default permissions, where the keys are role names and the values are lists of action names
+
+     */
     public static void updatePermission(final String locationHint, final long groupId,
             final long companyId, final long elementId, final String className,
             final RolePermissions rolePermissions,

@@ -57,6 +57,8 @@ import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.xml.ElementImpl;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import eu.lundegaard.liferay.db.setup.LiferaySetup;
+import eu.lundegaard.liferay.db.setup.core.support.ClassNameLocalServiceUtilWrapper;
+import eu.lundegaard.liferay.db.setup.core.support.PortalUtilFacade;
 import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.core.util.ResourcesUtil;
 import eu.lundegaard.liferay.db.setup.core.util.StringPool;
@@ -64,7 +66,6 @@ import eu.lundegaard.liferay.db.setup.core.util.TaggingUtil;
 import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
 import eu.lundegaard.liferay.db.setup.core.util.WebFolderUtil;
 import eu.lundegaard.liferay.db.setup.domain.*;
-import eu.lundegaard.liferay.db.setup.wrapper.ClassNameLocalServiceUtilWrapper;
 import org.dom4j.tree.DefaultText;
 import org.dom4j.util.IndexedElement;
 import java.io.IOException;
@@ -151,7 +152,7 @@ public final class SetupArticles {
         List<Structure> articleStructures = site.getArticleStructure();
 
         if (articleStructures != null) {
-            long classNameId = ClassNameLocalServiceUtil.getClassNameId(JournalArticle.class);
+            long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(JournalArticle.class);
             for (Structure structure : articleStructures) {
                 try {
                     addDDMStructure(structure, groupId, classNameId, companyId);
@@ -166,7 +167,7 @@ public final class SetupArticles {
         List<Structure> ddlStructures = site.getDdlStructure();
 
         if (articleStructures != null) {
-            long classNameId = ClassNameLocalServiceUtil.getClassNameId(DDLRecordSet.class);
+            long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(DDLRecordSet.class);
             for (Structure structure : ddlStructures) {
                 LOG.info("Adding DDL structure " + structure.getName());
                 try {
@@ -246,7 +247,7 @@ public final class SetupArticles {
 
         LOG.info("Adding Article structure " + structure.getName());
         Map<Locale, String> nameMap = new HashMap<>();
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         String name = getStructureNameOrKey(structure);
         nameMap.put(siteDefaultLocale, name);
         Map<Locale, String> descMap = new HashMap<>();
@@ -348,10 +349,10 @@ public final class SetupArticles {
             throws SystemException, PortalException, IOException, URISyntaxException {
 
         LOG.info("Adding Article template " + template.getName());
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(DDMStructure.class);
-        long resourceClassnameId = ClassNameLocalServiceUtil.getClassNameId(JournalArticle.class);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(DDMStructure.class);
+        long resourceClassnameId = ClassNameLocalServiceUtilWrapper.getClassNameId(JournalArticle.class);
         Map<Locale, String> nameMap = new HashMap<>();
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         String name = template.getName();
         if (name == null) {
             name = template.getKey();
@@ -430,12 +431,12 @@ public final class SetupArticles {
         long classNameId = PortalUtil.getClassNameId(template.getClassName());
 
         long resourceClassnameId = Validator.isBlank(template.getResourceClassName())
-                ? ClassNameLocalServiceUtil.getClassNameId(PortletDisplayTemplate.class)
-                : ClassNameLocalServiceUtil.getClassNameId(template.getResourceClassName());
+                ? ClassNameLocalServiceUtilWrapper.getClassNameId(PortletDisplayTemplate.class)
+                : ClassNameLocalServiceUtilWrapper.getClassNameId(template.getResourceClassName());
 
         Map<Locale, String> nameMap = new HashMap<Locale, String>();
 
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         String name = template.getName();
         if (name == null) {
             name = template.getTemplateKey();
@@ -619,7 +620,7 @@ public final class SetupArticles {
             throws SystemException, PortalException {
         LOG.info("Adding DDLRecordSet " + recordSet.getName());
         Map<Locale, String> nameMap = new HashMap<>();
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         nameMap.put(siteDefaultLocale, recordSet.getName());
         Map<Locale, String> descMap = new HashMap<>();
         descMap.put(siteDefaultLocale, recordSet.getDescription());
