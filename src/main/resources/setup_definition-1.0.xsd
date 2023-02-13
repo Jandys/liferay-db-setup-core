@@ -969,28 +969,11 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="form-data" type="xs:string"/>
-                <xs:element name="form-layout" type="xs:string"/>
-                <xs:element name="form-settings" type="xs:string"/>
-                <xs:element name="form-description">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="Description" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute type="xs:string" name="language-id"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                        <xs:attribute type="xs:string" name="available-locales"/>
-                        <xs:attribute type="xs:string" name="default-locale"/>
-                    </xs:complexType>
-                </xs:element>
-                <xs:element ref="form-name" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="form-field" type="ddmFormField" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element name="form-name" type="formNameMap" minOccurs="1" maxOccurs="1" />
+                <xs:element name="form-description" type="formNameMap" minOccurs="1" maxOccurs="1"/>
             </xs:sequence>
+            <xs:attribute name="default-language" type="xs:language" use="required"/>
             <xs:attribute name="structure-key" type="xs:string" use="required"/>
             <xs:attribute name="setup-action" type="setupActionType" default="create"/>
         </xs:complexType>
@@ -1015,6 +998,61 @@
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:complexType name="formNameMap">
+        <xs:sequence>
+            <xs:element name="localizedValue" type="form-name" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ddmFormField">
+        <xs:sequence>
+            <xs:element name="property" type="ddmFormFieldProperty" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="options" type="ddmFormFieldOptions" minOccurs="0" maxOccurs="1" />
+            <xs:element name="validation" type="ddmFormFieldValidation" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="type" type="ddmFormFieldType" use="required"/>
+        <xs:attribute name="fieldReference" type="xs:string"/>
+        <xs:attribute name="label" type="xs:string" use="required"/>
+        <xs:attribute name="multiple" type="xs:boolean" default="false"/>
+        <xs:attribute name="localizable" type="xs:boolean" default="false"/>
+        <xs:attribute name="required" type="xs:boolean" default="false"/>
+        <xs:attribute name="repeatable" type="xs:boolean" default="false"/>
+    </xs:complexType>
+
+    <xs:simpleType name="ddmFormFieldType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Paragraph"/>
+            <xs:enumeration value="Text"/>
+            <xs:enumeration value="Select"/>
+            <xs:enumeration value="Radio"/>
+            <xs:enumeration value="Grid"/>
+            <xs:enumeration value="Date"/>
+            <xs:enumeration value="Date Time"/>
+            <xs:enumeration value="Numeric"/>
+            <xs:enumeration value="Checkbox"/>
+            <xs:enumeration value="Image"/>
+            <xs:enumeration value="Rich Text"/>
+            <xs:enumeration value="Document Library"/>
+            <xs:enumeration value="Upload"/>
+            <xs:enumeration value="Color"/>
+            <xs:enumeration value="Search Location"/>
+            <xs:enumeration value="Separator"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ddmFormFieldProperty">
+
+    </xs:complexType>
+
+    <xs:complexType name="ddmFormFieldOptions">
+        <xs:attribute name="defaultLocale" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="ddmFormFieldValidation">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="value" type="xs:string" use="required"/>
+        <xs:attribute name="errorMessage" type="xs:string"/>
+    </xs:complexType>
 
     <xs:element name="fragment">
         <xs:complexType>
@@ -1047,14 +1085,12 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="form-name">
-        <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:attribute type="xs:string" name="locale" use="required"/>
-                </xs:extension>
-            </xs:simpleContent>
-        </xs:complexType>
-    </xs:element>
+    <xs:complexType name="form-name">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute type="xs:string" name="locale" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
 
 </xs:schema>
