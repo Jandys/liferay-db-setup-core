@@ -47,13 +47,27 @@ XML file of an upgrade step has usually this structure:
 <setup xmlns="http://www.lundegaard.eu/liferay/setup">
     <configuration>
         <runasuser>test@liferay.com</runasuser>
+        <company>2050040</company>
     </configuration>
 
     <!-- Artifacts to manage --> 
 </setup>
 ```
 
-`runasuser` defines under which user artifacts will be created. Then you can specify as many artifacts to setup as you want.
+`runasuser` defines under which user artifacts will be created. Then you can specify as many artifacts to setup as you want.\
+`runasuser` can be left blank (user is not filled) in this scenario, default companyID administrator will be used.
+
+**NEW:**\
+`company` defines in which company should the setups be done. It is _optional_ element.\
+**Company** element can also have optional flag attributes
+* useCompanyWebId
+* useCompanyMx
+* useVirtualHost
+* useLogoId
+
+Those determine what the content inside the element means.\
+By Default _(without any additional attributes)_ content inside `company` element is read as **company ID**. 
+
 
 For instance, this will create **Role** with Publisher as a name.
 
@@ -74,11 +88,18 @@ For instance, this will create **Role** with Publisher as a name.
 
 In **Artifacts to manage** section you can specify a lot of artifacts.
 
-### Role
+### Roles
 
+Code below creates **Role** named _"Content Admin"_ that can **VIEW** `com.liferay.layout.page.template.model.LayoutPageTemplateEntry`
 ```xml
 <roles>
-    <role name="Publisher"/>
+    <role name="Content admin">
+        <define-permissions>
+            <define-permission define-permission-name="com.liferay.layout.page.template.model.LayoutPageTemplateEntry">
+                <permission-action action-name="VIEW"/>
+            </define-permission>
+        </define-permissions>
+    </role>
 </roles>
 ```
 
@@ -109,8 +130,16 @@ Site element must always have `site-friendly-url` filled. Guest site is determin
 </sites>
 ```
 
+### Document Folder
+Create **Document folder** named _"/Icons"_ if it does not exist.
+
+```xml
+<document-folder create-if-not-exists="true" folder-name="/Icons" />
+```
+
 ### Document
 
+Create **Document**.
 Document's file itself is determined by `file-system-name` attribute which defines resource on classpath.
 
 ```xml
@@ -118,6 +147,11 @@ Document's file itself is determined by `file-system-name` attribute which defin
           document-folder-name="/Icons"
           document-filename="icon-home.svg"
           document-title="icon-home.svg"/>
+```
+### Article Folder
+Code below creates folder for articles.
+```xml
+<article-folder folder-path="/links" description="Folder for links"/>
 ```
 
 ### Articles
@@ -132,11 +166,19 @@ Article's content is determined by `path` attribute which defines resource on cl
          articleId="FOOTER"
          article-folder-path="/Footer">
 </article>
+```
 
+### Article Structure
+
+```xml
 <article-structure key="BANNER-MAIN"
                    path="my-project/articles/homepage/structures/banner-main.json"
                    name="Banner - main"/>
+```
 
+### Article Template
+
+```xml
 <article-template key="BANNER-MAIN"
                   path="my-project/articles/homepage/templates/banner-main.ftl"
                   article-structure-key="BANNER-MAIN" name="Banner - main" cacheable="true"/>
@@ -165,6 +207,76 @@ Fragment content can be set by `path` attribute or by inner tag `<![CDATA[]]>`.
     </fragment-collection>
 ```
 
+### Organizations
+Create Organization named `setup-organization`
+```xml
+<organizations>
+   <organization name="setup-organization">
+   </organization>
+</organizations>
+```
+
+### User Groups
+Create user group.
+```xml
+<userGroups>
+   <userGroup name="setup-group" description="This is setup group.">
+       <role name="Content administrator">
+       </role>
+   </userGroup>
+</userGroups>
+```
+
+### User
+Create User.
+```xml
+ <users>
+    <user screenName="SetupUserOne" emailAddress="test@test.com" password="test" firstName="FirstName" lastName="LastName">
+        <role name="Client administrator">
+        </role>
+    </user>
+</users>
+```
+
+### Vocabulary and Categories
+Creates **Vocabulary** and **Categories** within. 
+```xml
+<vocabulary name="setup-vocabulary">
+    <category name="setup-category" description="This is created vocabulary.">
+        <title-translation locale="en_US" title-text="Vocabulary"/>
+        <title-translation locale="cs_CZ" title-text="Slovník"/>
+    </category>
+</vocabulary>
+```
+
+### Tags
+Create **tags**.
+```xml
+<tags>
+    <tag name="news-article"/>
+    <tag name="faq-questions"/>
+</tags>
+```
+
+### Pages 
+Setup Public and Private Pages.
+```xml
+<public-pages>
+    <page friendlyURL="/setup-page" name="Setup Page">
+        <custom-field-setting key="IS_SUPERB_PAGE" value="true"/>
+        <page friendlyURL="/child-page" name="Child Page">
+            <title-translation locale="en_US" title-text="Child Page"/>
+            <title-translation locale="cs_CZ" title-text="Podstránka"/>
+        </page>
+    </page>
+</public-pages>
+```
+```xml
+<private-pages>
+    <page friendlyURL="/setup-private" name="Private Page">
+    </page>
+</private-pages>
+```
 
 ### Others
 
