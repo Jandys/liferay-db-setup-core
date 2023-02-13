@@ -12,7 +12,7 @@
 
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>4.0.10-SNAPSHOT</version>
+    <version>4.0.13-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Liferay Portal DB Setup core</name>
@@ -110,6 +110,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -120,23 +126,6 @@
             <artifactId>com.liferay.petra.lang</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--        <dependency>-->
-<!--            <groupId>net.bytebuddy</groupId>-->
-<!--            <artifactId>byte-buddy</artifactId>-->
-<!--            <version>1.10.13</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>net.bytebuddy</groupId>-->
-<!--            <artifactId>byte-buddy-agent</artifactId>-->
-<!--            <version>1.10.13</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.objenesis</groupId>-->
-<!--            <artifactId>objenesis</artifactId>-->
-<!--            <version>3.0.1</version>-->
-<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -246,10 +235,11 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
 
-                            <!-- ignore petra.lang for "used declared", is used for correctly working tests-->
-                            <ignoredDependencies>
-                                <ignoredDependency>com.liferay:com.liferay.petra.lang:jar:5.1.2</ignoredDependency>
-                            </ignoredDependencies>
+                            <!-- ignore petra.lang and mockito-inline for "used declared", is used for correctly working tests-->
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.lang:jar:5.1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:jar:4.11.0</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>

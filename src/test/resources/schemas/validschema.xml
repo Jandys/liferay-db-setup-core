@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+  ~ Copyright (C) Lundegaard, s.r.o. 2019 - All Rights Reserved
+  ~ Proprietary and confidential. Unauthorized copying of this file, via any medium is strictly prohibited.
+  -->
+
+<setup xmlns="http://www.lundegaard.eu/liferay/setup">
+
+    <configuration>
+        <runasuser></runasuser>
+        <company >1</company>
+    </configuration>
+
+<!--    Skeleton step, does nothing -->
+
+</setup>
