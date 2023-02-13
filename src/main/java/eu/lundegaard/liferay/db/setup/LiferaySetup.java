@@ -23,11 +23,11 @@
  */
 package eu.lundegaard.liferay.db.setup;
 
+import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
@@ -35,12 +35,12 @@ import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
-import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import eu.lundegaard.liferay.db.setup.core.*;
+import eu.lundegaard.liferay.db.setup.core.support.CompanyFacadeUtil;
 import eu.lundegaard.liferay.db.setup.domain.*;
 import eu.lundegaard.liferay.db.setup.core.SetupCustomFields;
 import eu.lundegaard.liferay.db.setup.core.SetupOrganizations;
@@ -137,7 +137,7 @@ public final class LiferaySetup {
                 Configuration configuration = setup.getConfiguration();
 
                 eu.lundegaard.liferay.db.setup.domain.Company company = configuration.getCompany();
-                companyId = getCompanyIdFromCompany(company);
+                companyId = CompanyFacadeUtil.getCompanyId(company);
 
                 LOG.info("Executing in " + companyId + " companyId");
 
@@ -156,6 +156,9 @@ public final class LiferaySetup {
                 }
 
                 setupPortal(setup);
+            } catch (NoSuchUserException nsu) {
+                LOG.error("No User exists with the key {companyId=" + companyId + ", emailAddress="
+                        + setup.getConfiguration().getRunasuser() + "}");
             } catch (Exception e) {
                 LOG.error("An error occured while executing the portal setup ", e);
             } finally {
@@ -163,74 +166,6 @@ public final class LiferaySetup {
                 PermissionThreadLocal.setPermissionChecker(null);
             }
         }
-    }
-
-    /**
-     * Method is used to get value of companyId from configured company You can get
-     * such value by configuring:
-     * <ul>
-     * <li>companyId</li>
-     * <li>useCompanyMx</li>
-     * <li>companyWebId</li>
-     * <li>virtualHost</li>
-     * <li>logoId</li>
-     * </ul>
-     *
-     * @param company structure defined inside XSD
-     * @return company ID
-     * @throws PortalException is thrown if while fetching company error occures
-     */
-    public static long getCompanyIdFromCompany(eu.lundegaard.liferay.db.setup.domain.Company company)
-            throws PortalException {
-        if (company == null) {
-            return PortalUtil.getDefaultCompanyId();
-        }
-
-        String configuredValue = company.getValue();
-
-        if (company.isUseCompanyWebId()) {
-            Company companyByWebId = CompanyLocalServiceUtil.getCompanyByWebId(configuredValue);
-            if (companyByWebId != null) {
-                return companyByWebId.getCompanyId();
-            }
-        }
-
-        if (company.isUseCompanyMx()) {
-            Company companyByMx = CompanyLocalServiceUtil.getCompanyByMx(configuredValue);
-            if (companyByMx != null) {
-                return companyByMx.getCompanyId();
-            }
-        }
-
-        if (company.isUseVirtualHost()) {
-            Company companyByVirtualHost = CompanyLocalServiceUtil.getCompanyByVirtualHost(configuredValue);
-            if (companyByVirtualHost != null) {
-                return companyByVirtualHost.getCompanyId();
-            }
-        }
-
-        try {
-            long parsedConfiguredValue = Long.parseLong(configuredValue);
-
-            if (company.isUseLogoId()) {
-                Company companyByLogoId = CompanyLocalServiceUtil.getCompanyByLogoId(parsedConfiguredValue);
-                if (companyByLogoId != null) {
-                    return companyByLogoId.getCompanyId();
-                }
-            }
-
-            Company companyById = CompanyLocalServiceUtil.getCompanyById(parsedConfiguredValue);
-
-            if (companyById != null) {
-                return companyById.getCompanyId();
-            }
-
-        } catch (NumberFormatException e) {
-            LOG.error("Configured value for company could not be parsed.");
-        }
-
-        // if everything fails return default company
-        return PortalUtil.getDefaultCompanyId();
     }
 
     /**
