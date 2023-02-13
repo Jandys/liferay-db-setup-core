@@ -98,6 +98,19 @@ public final class SetupPages {
 
     }
 
+    /**
+     * Setups the pages for the site with the specified information.
+     * <p>This method sets up the public and private pages of the site based on the information passed in. If a theme is
+     * specified, it is set up for the pages. If a flag to delete existing pages is set, the existing pages are deleted.
+     * The pages are then added, and if a virtual host is specified, it is updated for the pages.
+     *
+     * @param site    the site for which pages are to be set up
+     * @param groupId the group ID of the site
+     * @param company the company ID of the site
+     * @param userid  the user ID of the person setting up the site pages
+     * @throws SystemException if an error occurs while updating the virtual host
+     * @throws PortalException if an error occurs while deleting pages or setting up the theme
+     */
     public static void setupSitePages(final Site site, final long groupId,
             final long company, final long userid) throws SystemException, PortalException {
 
@@ -144,9 +157,9 @@ public final class SetupPages {
      * Set the page templates up. As this is heavily based on page (layout).
      *
      * @param pageTemplates The page template definitions that are imported.
-     * @param groupId The group id of the site where to import the
-     * @param company The id of the company to which the templates are imported.
-     * @param userid The user id of the importing user.
+     * @param groupId       The group id of the site where to import the
+     * @param company       The id of the company to which the templates are imported.
+     * @param userid        The user id of the importing user.
      */
     public static void setupPageTemplates(final PageTemplates pageTemplates, final long groupId,
             final long company, final long userid) {
@@ -191,6 +204,14 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * Sets up the theme for a given group and its corresponding layout set, either private or public.
+     *
+     * @param groupId   the ID of the group
+     * @param theme     the theme to be set up
+     * @param isPrivate a flag indicating whether the layout set is private or public
+     * @throws SystemException if a system-level error occurred
+     */
     private static void setupTheme(final long groupId, final Theme theme, final boolean isPrivate)
             throws SystemException, PortalException {
 
@@ -205,6 +226,20 @@ public final class SetupPages {
         LayoutSetLocalServiceUtil.updateLayoutSet(set);
     }
 
+    /**
+     * Adds a list of pages to a group with a specified parent layout and sets the default layout for the page.
+     *
+     * @param pages                               List of pages to be added
+     * @param defaultLayout                       Default layout to be set if the page doesn't have a specific layout
+     * @param defaultLayoutContainedInThemeWithId ID of the theme that contains the default layout
+     * @param groupId                             ID of the group the pages will be added to
+     * @param isPrivate                           Specifies if the pages should be added to the private or public layout set
+     * @param parentLayoutId                      ID of the parent layout for the pages
+     * @param company                             ID of the company
+     * @param userId                              ID of the user creating the pages
+     * @throws SystemException If a system-level error occurs
+     * @throws PortalException If a portal-level error occurs
+     */
     private static void addPages(final List<Page> pages, String defaultLayout,
             String defaultLayoutContainedInThemeWithId,
             final long groupId, final boolean isPrivate, final long parentLayoutId, final long company,
@@ -251,6 +286,31 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * The {@code setupLiferayPage} method sets up a Liferay page by performing the following operations:
+     * <ul>
+     * <li>Setting the page theme, if the page has a theme specified.</li>
+     * <li>Setting the page layout template, if the page has a layout specified.</li>
+     * <li>Setting the page target.</li>
+     * <li>Adding portlets to the page, if the page has any associated portlets.</li>
+     * <li>Adding sub-pages to the page, if the page has any sub-pages.</li>
+     * <li>Setting custom fields for the page, if the page has any custom fields specified.</li>
+     * <li>Updating the permissions for the page, using the specified role permissions and the default permissions
+     * for private or public pages.</li>
+     * </ul>
+     *
+     * @param layout                              The layout to which the page belongs.
+     * @param page                                The page to set up.
+     * @param defaultLayout                       The default layout to use for the page and its sub-pages.
+     * @param defaultLayoutContainedInThemeWithId The theme that contains the default layout.
+     * @param groupId                             The group ID of the page.
+     * @param isPrivate                           A flag indicating whether the page is private or public.
+     * @param company                             The company ID of the page.
+     * @param userId                              The user ID of the page.
+     * @param pageTemplateName                    The name of the page template.
+     * @throws SystemException Thrown if there is a system error.
+     * @throws PortalException Thrown if there is a portal error.
+     */
     private static void setupLiferayPage(final Layout layout, final Page page, final String defaultLayout,
             final String defaultLayoutContainedInThemeWithId, final long groupId,
             final boolean isPrivate, final long company, final long userId,
@@ -303,6 +363,15 @@ public final class SetupPages {
         return DEFAULT_PERMISSIONS_PUBLIC;
     }
 
+    /**
+     * Creates a new link page based on the values provided in the {@link Page} object.
+     *
+     * @param p              the {@link Page} object containing the information needed to create a new link page
+     * @param groupId        the ID of the group that the new link page belongs to
+     * @param parentLayoutId the ID of the parent layout for the new link page
+     * @param userId         the ID of the user who is creating the new link page
+     * @return the newly created {@link Layout} object representing the link page
+     */
     private static Layout createLinkPage(final Page p, final long groupId,
             final long parentLayoutId, final long userId) {
         // all values are usually retrieved via special methods from our code
@@ -333,6 +402,14 @@ public final class SetupPages {
         return layout;
     }
 
+    /**
+     * Updates the given link page.
+     *
+     * @param page    the link page to be updated
+     * @param groupId the ID of the group the page belongs to
+     * @throws SystemException in case of an error during updating the link page
+     * @throws PortalException in case of an error during retrieving the layout of the link page
+     */
     private static void updateLinkPage(final Page page, final long groupId) {
         try {
             Layout layout = LayoutLocalServiceUtil.getFriendlyURLLayout(groupId, false,
@@ -357,6 +434,17 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * Creates a new page in the database with the provided information.
+     *
+     * @param groupId        The identifier of the group to which the page belongs.
+     * @param currentPage    The {@link Page} object with the details of the page to be created.
+     * @param parentLayoutId The identifier of the parent layout, or {@code 0} if it is a top-level page.
+     * @param isPrivate      A flag indicating whether the page is private or not.
+     * @return The newly created {@link Layout} object.
+     * @throws SystemException If a system exception occurs.
+     * @throws PortalException If a portal exception occurs.
+     */
     private static Layout createPage(final long groupId, final Page currentPage,
             final long parentLayoutId, final boolean isPrivate)
             throws SystemException, PortalException {
@@ -378,6 +466,15 @@ public final class SetupPages {
                 new ServiceContext());
     }
 
+    /**
+     * This method is used to set the custom fields for a layout.
+     *
+     * @param runAsUserId The user ID to be used when setting the custom fields.
+     * @param groupId     The group ID associated with the layout.
+     * @param company     The company ID associated with the layout.
+     * @param page        The page for which the custom fields are being set.
+     * @param layout      The layout for which the custom fields are being set.
+     */
     private static void setCustomFields(final long runAsUserId, final long groupId,
             final long company, final Page page, final Layout layout) {
         Class clazz = Layout.class;
@@ -392,6 +489,13 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * This method sets the target attribute for the given page.
+     * The target attribute is used to specify the target window for the page's link.
+     *
+     * @param page   The page for which the target attribute is to be set.
+     * @param layout The layout associated with the page.
+     */
     private static void setPageTarget(final Page page, final Layout layout) {
         UnicodeProperties props = layout.getTypeSettingsProperties();
         props.put("target", page.getTarget());
@@ -405,6 +509,13 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * Sets the theme for a given layout.
+     *
+     * @param layout the layout to set the theme for
+     * @param page   the page object containing the theme information
+     * @throws SystemException if an error occurs while setting the theme
+     */
     private static void setPageTheme(final Layout layout, final Page page) throws SystemException {
 
         Theme theme = page.getTheme();
@@ -420,6 +531,19 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * Adds a portlet to the given page and sets its preferences.
+     *
+     * @param page      The {@link Page} to which the portlet should be added.
+     * @param layout    The {@link Layout} of the page.
+     * @param portlet   The {@link Pageportlet} to be added to the page.
+     * @param companyId The ID of the company.
+     * @param groupId   The ID of the group.
+     * @throws SystemException    If a system error occurs.
+     * @throws ValidatorException If validation fails.
+     * @throws IOException        If an I/O error occurs.
+     * @throws PortalException    If a portal error occurs.
+     */
     private static void addPortletIntoPage(final Page page, final Layout layout,
             final Pageportlet portlet, final long companyId, final long groupId)
             throws SystemException, ValidatorException, IOException, PortalException {
@@ -489,11 +613,11 @@ public final class SetupPages {
      * path and title of the refered document &gt; }}</li>
      * </ul>
      *
-     * @param key The portlet key.
-     * @param value The defined value which should be parametrized.
-     * @param portlet The pageportlet definition.
-     * @param company Id of the company.
-     * @param groupId The group id.
+     * @param key         The portlet key.
+     * @param value       The defined value which should be parametrized.
+     * @param portlet     The pageportlet definition.
+     * @param company     Id of the company.
+     * @param groupId     The group id.
      * @param runAsUserId The user id which import the data.
      */
     private static String resolvePortletPrefValue(final String key, final String value,
@@ -554,6 +678,13 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * Removes all portlets from the given {@code layout}.
+     *
+     * @param runasUser         the user ID to run as
+     * @param layoutTypePortlet the layout type portlet
+     * @param layout            the layout to remove portlets from
+     */
     private static void removeAllPortlets(final long runasUser,
             final LayoutTypePortlet layoutTypePortlet, final Layout layout) {
         List<Portlet> portlets = null;
@@ -592,6 +723,13 @@ public final class SetupPages {
         }
     }
 
+    /**
+     * Deletes all the pages of the given group.
+     *
+     * @param groupId      The ID of the group.
+     * @param privatePages Indicates whether to delete private pages or not.
+     *                     If `true`, private pages will be deleted, if `false` public pages will be deleted.
+     */
     private static void deletePages(final long groupId, boolean privatePages) {
 
         ServiceContext serviceContext = new ServiceContext();
