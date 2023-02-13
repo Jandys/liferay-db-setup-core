@@ -30,15 +30,15 @@ import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
 import eu.lundegaard.liferay.db.setup.core.support.PortalUtilFacade;
 import eu.lundegaard.liferay.db.setup.domain.DescriptionTranslation;
 import eu.lundegaard.liferay.db.setup.domain.TitleTranslation;
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-class FieldMapUtilTest {
+public class FieldMapUtilTest {
 
     @Test
-    void getTitleMap() {
+    public void getTitleMap() {
         TitleTranslation titleTranslationCs = new TitleTranslation();
         titleTranslationCs.setLocale("cs_CZ");
         titleTranslationCs.setTitleText("Nadpis");
@@ -58,7 +58,7 @@ class FieldMapUtilTest {
     }
 
     @Test
-    void getDescriptionMap() {
+    public void getDescriptionMap() {
         DescriptionTranslation descriptionTranslation = new DescriptionTranslation();
         descriptionTranslation.setLocale("cs_CZ");
         descriptionTranslation.setTitleText("Popis");
