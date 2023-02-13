@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import com.liferay.asset.kernel.exception.DuplicateCategoryException;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetTag;
@@ -64,7 +65,7 @@ import eu.lundegaard.liferay.db.setup.domain.Vocabulary;
  */
 public final class SetupCategorization {
 
-    private static final Log LOG = LogFactoryUtil.getLog(SetupArticles.class);
+    private static final Log LOG = LogFactoryUtil.getLog(SetupCategorization.class);
 
     private SetupCategorization() {
 
@@ -331,8 +332,10 @@ public final class SetupCategorization {
             setupCategories(vocabularyId, groupId, assetCategory.getCategoryId(),
                     category.getCategory(), defaultLocale, companyId);
 
+        } catch (DuplicateCategoryException de) {
+            LOG.info("Category with name: " + category.getName() + " already exists.");
         } catch (PortalException | SystemException e) {
-            LOG.error("Error in creating category with name: " + category.getName(), e);
+            LOG.error("Error in creating category with name: " + category.getName());
         }
 
     }

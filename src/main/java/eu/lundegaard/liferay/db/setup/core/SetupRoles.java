@@ -72,6 +72,13 @@ public final class SetupRoles {
         }
     }
 
+    /**
+     * Adds a role with the specified details.
+     *
+     * @param role the role to be added
+     * @throws SystemException if a system-level error occurs.
+     * @throws PortalException if any portal error occurs while adding the role.
+     */
     private static void addRole(final eu.lundegaard.liferay.db.setup.domain.Role role) {
 
         Map<Locale, String> localeTitleMap = new HashMap<>();
@@ -99,6 +106,15 @@ public final class SetupRoles {
 
     }
 
+    /**
+     * Deletes roles based on the delete method provided. The roles can be deleted either by excluding the listed roles or
+     * <p>
+     * including only the listed roles.
+     *
+     * @param roles        List of {@link eu.lundegaard.liferay.db.setup.domain.Role} objects to be deleted.
+     * @param deleteMethod Specifies the method of deletion. Possible values are "excludeListed" or "onlyListed".
+     * @param companyId    The identifier of the company that the roles belong to.
+     */
     public static void deleteRoles(final List<eu.lundegaard.liferay.db.setup.domain.Role> roles,
             final String deleteMethod, long companyId) {
 
@@ -149,6 +165,14 @@ public final class SetupRoles {
 
     }
 
+    /**
+     * This method adds role permissions to a Liferay database setup.
+     *
+     * @param role        The role for which permissions are to be added.
+     * @param runAsUserId The user ID to run the setup as.
+     * @param groupId     The ID of the group.
+     * @param companyId   The ID of the company.
+     */
     private static void addRolePermissions(eu.lundegaard.liferay.db.setup.domain.Role role, long runAsUserId,
             long groupId, long companyId) {
         if (role.getDefinePermissions() != null) {
