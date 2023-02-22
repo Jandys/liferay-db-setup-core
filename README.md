@@ -3,6 +3,11 @@
 # Liferay Portal DB Setup core
 Library that allows to setup a number of Liferay artifacts in a DB. It uses xml configuration and Liferay APIs to add all configured artifacts. Artifacts in the database are created by Liferay common **upgrade process**. Each step of the upgrade process consists of one or more xml files, in which you can define artifacts to create or update.
 
+> **What's new in 4.0.0?**\
+> Upgrade to work with Liferay API version 7.4.\
+> Addition of possibility to setup artifacts for not default company.\
+> Addition of Tags.
+
 ## Usage
 
 First add this dependency into your OSGi module project's `pom.xml`.
@@ -68,6 +73,8 @@ XML file of an upgrade step has usually this structure:
 Those determine what the content inside the element means.\
 By Default _(without any additional attributes)_ content inside `company` element is read as **company ID**. 
 
+--- 
+### Example of whole XML file
 
 For instance, this will create **Role** with Publisher as a name.
 
@@ -83,6 +90,8 @@ For instance, this will create **Role** with Publisher as a name.
     </roles>
 </setup>
 ```
+
+---
 
 ## Features
 
@@ -280,14 +289,17 @@ Setup Public and Private Pages.
 
 ### Others
 
-You can create/update/set many other artifacts like User, Organization, Page, Portlet placement, Permission, ... See source code.
+You can create/update/set many other artifacts like Portlet placement, Permission, ... See source code.
 
 ## Compatibility
 
 Liferay Portal Version | Version
 ---------------------- | -------
+7.4.x | 4.x.x
 7.3.x | 3.1.x
 7.2.x | 3.0.x
 older | use original [Mimacom library](https://github.com/mimacom/liferay-db-setup-core)
 
-
+> **Note:** New changes introduced in version 4.0.0 may not be backwards compatible.
+> Such as Tags and Company.\
+> See the source if you are not sure about some features.
