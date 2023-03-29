@@ -57,5 +57,9 @@ public class PortalUtilFacade {
         return siteDefaultLocale;
     }
 
+    public static long getDefaultCompanyId(){
+        return PortalUtil.getDefaultCompanyId();
+    }
+
 
 }

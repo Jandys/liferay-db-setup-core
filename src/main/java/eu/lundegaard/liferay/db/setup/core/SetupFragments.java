@@ -48,19 +48,21 @@ public class SetupFragments {
 
     private static final String REQUIRED_FRAGMENT_CONFIGURATION = "{\"fieldSets\":[]}";
     private static final Log LOG = LogFactoryUtil.getLog(SetupFragments.class);
+    private static final String FRAGMENT = "Fragment ";
 
-    private SetupFragments() {
-    }
+    private SetupFragments() {}
 
     /**
-     * Sets up the fragments based on the list of {@link FragmentCollection} objects provided. The setup action for
-     * each fragment collection can be set as CREATE, UPDATE, or DELETE, and the appropriate action is taken.
+     * Sets up the fragments based on the list of {@link FragmentCollection} objects
+     * provided. The setup action for each fragment collection can be set as CREATE,
+     * UPDATE, or DELETE, and the appropriate action is taken.
      *
      * @param fragmentCollections The list of {@link FragmentCollection} objects.
-     * @param userId              The ID of the user who created the collection.
-     * @param groupId             The ID of the group to which the collection belongs.
-     * @param companyId           The ID of the company.
-     * @throws IllegalArgumentException if the setup action is set to anything other than CREATE, UPDATE, or DELETE.
+     * @param userId The ID of the user who created the collection.
+     * @param groupId The ID of the group to which the collection belongs.
+     * @param companyId The ID of the company.
+     * @throws IllegalArgumentException if the setup action is set to anything other
+     *         than CREATE, UPDATE, or DELETE.
      */
     public static void setupFragments(List<FragmentCollection> fragmentCollections, long userId, long groupId,
             long companyId) {
@@ -89,16 +91,21 @@ public class SetupFragments {
     }
 
     /**
-     * Saves a {@link FragmentCollection} object to the database. The method checks if the collection already exists in the database,
-     * and if it does, it updates the existing record. If not, it creates a new record. The method also saves all the fragments
-     * associated with the collection. The setup action for each fragment can be set as CREATE, UPDATE, or DELETE, and the appropriate action is taken.
+     * Saves a {@link FragmentCollection} object to the database. The method checks
+     * if the collection already exists in the database, and if it does, it updates
+     * the existing record. If not, it creates a new record. The method also saves
+     * all the fragments associated with the collection. The setup action for each
+     * fragment can be set as CREATE, UPDATE, or DELETE, and the appropriate action
+     * is taken.
      *
      * @param fragmentCollection The {@link FragmentCollection} object to be saved.
-     * @param userId             The ID of the user who created the collection.
-     * @param groupId            The ID of the group to which the collection belongs.
-     * @param serviceContext     The {@link ServiceContext} object.
-     * @throws IllegalArgumentException if the setup action is set to anything other than CREATE, UPDATE, or DELETE.
-     * @throws PortalException          if there is an error during the setup of the collection.
+     * @param userId The ID of the user who created the collection.
+     * @param groupId The ID of the group to which the collection belongs.
+     * @param serviceContext The {@link ServiceContext} object.
+     * @throws IllegalArgumentException if the setup action is set to anything other
+     *         than CREATE, UPDATE, or DELETE.
+     * @throws PortalException if there is an error during the setup of the
+     *         collection.
      */
     private static void saveFragmentCollection(FragmentCollection fragmentCollection, long userId, long groupId,
             ServiceContext serviceContext) {
@@ -148,7 +155,7 @@ public class SetupFragments {
      * Deletes a {@link FragmentCollection} with the specified name and group ID.
      *
      * @param fragmentCollection The fragment collection to be deleted
-     * @param groupId            The group ID of the fragment collection
+     * @param groupId The group ID of the fragment collection
      */
     private static void deleteFragmentCollection(FragmentCollection fragmentCollection, long groupId) {
         String collectionName = fragmentCollection.getName();
@@ -177,11 +184,13 @@ public class SetupFragments {
     }
 
     /**
-     * Finds the {@link com.liferay.fragment.model.FragmentCollection} with the given name and group ID.
+     * Finds the {@link com.liferay.fragment.model.FragmentCollection} with the
+     * given name and group ID.
      *
      * @param collectionName the name of the FragmentCollection to be found
-     * @param groupId        the group ID of the FragmentCollection to be found
-     * @return an {@link Optional} containing the found FragmentCollection, or empty if not found
+     * @param groupId the group ID of the FragmentCollection to be found
+     * @return an {@link Optional} containing the found FragmentCollection, or empty
+     *         if not found
      */
     private static Optional<com.liferay.fragment.model.FragmentCollection> findFragmentCollection(String collectionName,
             long groupId) {
@@ -196,11 +205,12 @@ public class SetupFragments {
     /**
      * Saves a fragment in Liferay.
      *
-     * @param fragment          the fragment to be saved
-     * @param userId            the ID of the user who is saving the fragment
-     * @param groupId           the ID of the group to which the fragment belongs
-     * @param createdCollection the fragment collection in which the fragment will be saved
-     * @param serviceContext    the service context for the operation
+     * @param fragment the fragment to be saved
+     * @param userId the ID of the user who is saving the fragment
+     * @param groupId the ID of the group to which the fragment belongs
+     * @param createdCollection the fragment collection in which the fragment will
+     *        be saved
+     * @param serviceContext the service context for the operation
      * @throws PortalException if there is an error during the setup of the fragment
      */
     private static void saveFragment(Fragment fragment, long userId, long groupId,
@@ -266,8 +276,8 @@ public class SetupFragments {
     /**
      * Deletes a fragment.
      *
-     * @param fragment          the fragment to delete
-     * @param groupId           the group ID
+     * @param fragment the fragment to delete
+     * @param groupId the group ID
      * @param createdCollection the created fragment collection
      */
     private static void deleteFragment(Fragment fragment, long groupId,
@@ -277,12 +287,12 @@ public class SetupFragments {
 
         Optional<FragmentEntry> existingFragment = findFragment(fragment, createdCollection, groupId);
         if (existingFragment.isPresent()) {
-            LOG.info("Fragment " + fragmentName + " found, deleting...");
+            LOG.info(FRAGMENT + fragmentName + " found, deleting...");
             try {
                 FragmentEntry fragmentEntry = existingFragment.get();
                 if (FragmentEntryLinkLocalServiceUtil.getAllFragmentEntryLinksCountByFragmentEntryId(groupId,
                         fragmentEntry.getFragmentEntryId()) > 0) {
-                    LOG.warn("Fragment " + fragmentName + " has usages, can not be deleted");
+                    LOG.warn(FRAGMENT + fragmentName + " has usages, can not be deleted");
                 } else {
                     FragmentEntryLocalServiceUtil
                             .deleteFragmentEntry(fragmentEntry.getFragmentEntryId());
@@ -292,17 +302,18 @@ public class SetupFragments {
                 LOG.error("Error during deleting the fragment " + fragmentName, e);
             }
         } else {
-            LOG.warn("Fragment " + fragmentName + " not found");
+            LOG.warn(FRAGMENT + fragmentName + " not found");
         }
     }
 
     /**
      * Finds a fragment by key.
      *
-     * @param fragment          the fragment to find
+     * @param fragment the fragment to find
      * @param createdCollection the created fragment collection
-     * @param groupId           the group ID
-     * @return an optional object containing the found fragment, or an empty optional if no such fragment is found
+     * @param groupId the group ID
+     * @return an optional object containing the found fragment, or an empty
+     *         optional if no such fragment is found
      */
     private static Optional<FragmentEntry> findFragment(Fragment fragment,
             com.liferay.fragment.model.FragmentCollection createdCollection, long groupId) {
@@ -316,8 +327,9 @@ public class SetupFragments {
     /**
      * Deletes all child fragments of a given fragment collection.
      *
-     * @param collection The fragment collection whose child fragments should be deleted
-     * @param groupId    The group ID of the fragment collection
+     * @param collection The fragment collection whose child fragments should be
+     *        deleted
+     * @param groupId The group ID of the fragment collection
      * @throws PortalException if an error occurs during the deletion process
      */
     private static void deleteChildFragments(com.liferay.fragment.model.FragmentCollection collection, long groupId)
@@ -326,7 +338,7 @@ public class SetupFragments {
                 .getFragmentEntries(collection.getFragmentCollectionId())) {
             if (FragmentEntryLinkLocalServiceUtil.getAllFragmentEntryLinksCountByFragmentEntryId(groupId,
                     fragmentEntry.getFragmentEntryId()) > 0) {
-                LOG.warn("Fragment " + fragmentEntry.getName() + " has usages, can not be deleted");
+                LOG.warn(FRAGMENT + fragmentEntry.getName() + " has usages, can not be deleted");
             } else {
                 FragmentEntryLocalServiceUtil
                         .deleteFragmentEntry(fragmentEntry.getFragmentEntryId());
