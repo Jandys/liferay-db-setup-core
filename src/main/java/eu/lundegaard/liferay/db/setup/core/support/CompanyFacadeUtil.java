@@ -28,7 +28,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import eu.lundegaard.liferay.db.setup.LiferaySetup;
 
 /**
@@ -58,7 +57,7 @@ public class CompanyFacadeUtil {
      */
     public static long getCompanyId(eu.lundegaard.liferay.db.setup.domain.Company company) throws PortalException {
         if (company == null) {
-            return PortalUtil.getDefaultCompanyId();
+            return PortalUtilFacade.getDefaultCompanyId();
         }
 
         String configuredValue = company.getValue();
@@ -103,6 +102,6 @@ public class CompanyFacadeUtil {
         }
 
         // if everything fails return default company
-        return PortalUtil.getDefaultCompanyId();
+        return PortalUtilFacade.getDefaultCompanyId();
     }
 }

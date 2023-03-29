@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import eu.lundegaard.liferay.db.setup.core.*;
 import eu.lundegaard.liferay.db.setup.core.support.CompanyFacadeUtil;
 import eu.lundegaard.liferay.db.setup.domain.*;
@@ -67,6 +66,7 @@ public final class LiferaySetup {
 
     private static final Log LOG = LogFactoryUtil.getLog(LiferaySetup.class);
     private static final String ADMIN_ROLE_NAME = "Administrator";
+    private static final String SETTING_UP = "Setting up ";
     private static long runAsUserId;
     private static long companyId;
 
@@ -188,7 +188,6 @@ public final class LiferaySetup {
      * <li>sites - {@link SetupSites#setupSites(List, Group, long)}</li>
      * <li>pageTemplates -
      * {@link SetupPages#setupPageTemplates(PageTemplates, long, long, long)}</li>
-     * <li>form - {@link SetupForms#setupForms(List, long, long, long)}</li>
      * </ul>
      *
      * @param setup the {@link Setup} object to be used for the setup process
@@ -216,51 +215,46 @@ public final class LiferaySetup {
         }
 
         if (setup.getCustomFields() != null) {
-            LOG.info("Setting up " + setup.getCustomFields().getField().size() + " custom fields");
+            LOG.info(SETTING_UP + setup.getCustomFields().getField().size() + " custom fields");
             SetupCustomFields.setupExpandoFields(setup.getCustomFields().getField(), companyId);
         }
 
         if (setup.getRoles() != null) {
-            LOG.info("Setting up " + setup.getRoles().getRole().size() + " roles");
+            LOG.info(SETTING_UP + setup.getRoles().getRole().size() + " roles");
             SetupRoles.setupRoles(setup.getRoles().getRole(), runAsUserId, groupId, companyId);
         }
         if (setup.getUsers() != null) {
-            LOG.info("Setting up " + setup.getUsers().getUser().size() + " users");
+            LOG.info(SETTING_UP + setup.getUsers().getUser().size() + " users");
             SetupUsers.setupUsers(setup.getUsers().getUser(), defaultUserId, groupId, companyId);
         }
 
         if (setup.getOrganizations() != null) {
-            LOG.info("Setting up " + setup.getOrganizations().getOrganization().size() + " organizations");
+            LOG.info(SETTING_UP + setup.getOrganizations().getOrganization().size() + " organizations");
             SetupOrganizations.setupOrganizations(setup.getOrganizations().getOrganization(), null, null, companyId);
         }
 
         if (setup.getUserGroups() != null) {
-            LOG.info("Setting up " + setup.getUserGroups().getUserGroup().size() + " User Groups");
+            LOG.info(SETTING_UP + setup.getUserGroups().getUserGroup().size() + " User Groups");
             SetupUserGroups.setupUserGroups(setup.getUserGroups().getUserGroup(), companyId);
         }
 
         if (setup.getPortletPermissions() != null) {
-            LOG.info("Setting up " + setup.getPortletPermissions().getPortlet().size() + " roles");
+            LOG.info(SETTING_UP + setup.getPortletPermissions().getPortlet().size() + " roles");
             SetupPermissions.setupPortletPermissions(setup.getPortletPermissions(), companyId);
         }
 
         if (!setup.getFragmentCollection().isEmpty()) {
-            LOG.info("Setting up " + setup.getFragmentCollection().size() + " fragment collections with fragments");
+            LOG.info(SETTING_UP + setup.getFragmentCollection().size() + " fragment collections with fragments");
             SetupFragments.setupFragments(setup.getFragmentCollection(), defaultUserId, groupId, companyId);
         }
 
         if (setup.getSites() != null) {
-            LOG.info("Setting up " + setup.getSites().getSite().size() + " sites");
+            LOG.info(SETTING_UP + setup.getSites().getSite().size() + " sites");
             SetupSites.setupSites(setup.getSites().getSite(), null, companyId);
         }
 
         if (setup.getPageTemplates() != null) {
             SetupPages.setupPageTemplates(setup.getPageTemplates(), groupId, companyId, defaultUserId);
-        }
-
-        if (!setup.getForm().isEmpty()) {
-            LOG.info("Handling " + setup.getForm().size() + " forms");
-            SetupForms.setupForms(setup.getForm(), defaultUserId, groupId, companyId);
         }
 
         LOG.info("Setup finished");
@@ -305,7 +299,7 @@ public final class LiferaySetup {
      *         if no user is found, returns null
      * @throws Exception if cannot obtain permission checker
      */
-    private static User getAdminUser(final long companyId) throws Exception {
+    private static User getAdminUser(final long companyId) throws RuntimeException {
 
         try {
             Role adminRole = RoleLocalServiceUtil.getRole(companyId, ADMIN_ROLE_NAME);
@@ -316,7 +310,7 @@ public final class LiferaySetup {
             }
             return adminUsers.get(0);
         } catch (PortalException | SystemException e) {
-            throw new Exception("Cannot obtain Liferay role for role name: " + ADMIN_ROLE_NAME, e);
+            throw new RuntimeException("Cannot obtain Liferay role for role name: " + ADMIN_ROLE_NAME, e);
         }
     }
 
@@ -327,7 +321,7 @@ public final class LiferaySetup {
      * @param companyId company ID
      * @throws Exception if cannot set permission checker
      */
-    private static void setAdminPermissionCheckerForThread(final long companyId) throws Exception {
+    private static void setAdminPermissionCheckerForThread(final long companyId) throws RuntimeException {
 
         User adminUser = getAdminUser(companyId);
         if (adminUser == null) {
@@ -340,7 +334,7 @@ public final class LiferaySetup {
         try {
             permissionChecker = PermissionCheckerFactoryUtil.create(adminUser);
         } catch (Exception e) {
-            throw new Exception("Cannot obtain permission checker for Liferay Administrator user", e);
+            throw new RuntimeException("Cannot obtain permission checker for Liferay Administrator user", e);
         }
         PermissionThreadLocal.setPermissionChecker(permissionChecker);
     }
