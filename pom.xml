@@ -12,7 +12,7 @@
 
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>4.0.13-SNAPSHOT</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>Liferay Portal DB Setup core</name>
@@ -22,6 +22,7 @@
     <inceptionYear>2016</inceptionYear>
 
     <properties>
+        <java.version>11</java.version>
         <liferay.version>7.4.3.54</liferay.version>
     </properties>
 
@@ -221,7 +222,7 @@
 
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>module-info-properties</id>
@@ -251,10 +252,18 @@
                         <configuration>
                             <failOnWarning>true</failOnWarning>
 
-                            <!-- ignore petra.lang and mockito-inline for "used declared", is used for correctly working tests-->
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>xml-apis:xml-apis:jar:1.0.b2</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+
+                            <!-- ignored dependencies "used declared", are used inside liferay context, they are needed for proper test run -->
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.lang:jar:5.1.2</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:jar:4.11.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>commons-configuration:commons-configuration:jar:1.10</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.reflect:jar:5.1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.sql.dsl.api:jar:4.0.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.function:jar:5.3.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.lang:jar:5.1.2</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
