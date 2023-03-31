@@ -243,11 +243,6 @@ public final class LiferaySetup {
             SetupPermissions.setupPortletPermissions(setup.getPortletPermissions(), companyId);
         }
 
-        if (!setup.getFragmentCollection().isEmpty()) {
-            LOG.info(SETTING_UP + setup.getFragmentCollection().size() + " fragment collections with fragments");
-            SetupFragments.setupFragments(setup.getFragmentCollection(), defaultUserId, groupId, companyId);
-        }
-
         if (setup.getSites() != null) {
             LOG.info(SETTING_UP + setup.getSites().getSite().size() + " sites");
             SetupSites.setupSites(setup.getSites().getSite(), null, companyId);

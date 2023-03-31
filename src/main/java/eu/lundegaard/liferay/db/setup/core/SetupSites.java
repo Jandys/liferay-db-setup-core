@@ -152,6 +152,9 @@ public class SetupSites {
                 // Users and Groups should be referenced to live Group
                 setMembership(site.getMembership(), companyId, liferayGroup.getGroupId());
 
+                SetupFragments.setupFragments(site.getFragmentCollection(), defaultUserId, groupId, companyId);
+                LOG.info("Site fragment collections setting finished");
+
                 List<eu.lundegaard.liferay.db.setup.domain.Site> sites = site
                         .getSite();
                 setupSites(sites, liferayGroup, companyId);

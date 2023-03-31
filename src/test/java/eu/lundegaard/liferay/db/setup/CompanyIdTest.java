@@ -94,7 +94,7 @@ public class CompanyIdTest {
                 CompanyLocalServiceUtil.class)) {
             //prepare
             localServiceUtilMockedStatic.when(
-                            (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByWebId("test.com"))
+                    (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByWebId("test.com"))
                     .thenReturn(liferayCompany);
 
             //act
@@ -120,7 +120,7 @@ public class CompanyIdTest {
                 CompanyLocalServiceUtil.class)) {
             //prepare
             localServiceUtilMockedStatic.when(
-                            (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByMx("companyMX"))
+                    (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByMx("companyMX"))
                     .thenReturn(liferayCompany);
 
             //act
@@ -146,7 +146,7 @@ public class CompanyIdTest {
                 CompanyLocalServiceUtil.class)) {
             //prepare
             localServiceUtilMockedStatic.when(
-                            (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByVirtualHost("virtual-host-name"))
+                    (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByVirtualHost("virtual-host-name"))
                     .thenReturn(liferayCompany);
 
             //act
@@ -172,7 +172,7 @@ public class CompanyIdTest {
                 CompanyLocalServiceUtil.class)) {
             //prepare
             localServiceUtilMockedStatic.when(
-                            (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByLogoId(1234L))
+                    (MockedStatic.Verification) CompanyLocalServiceUtil.getCompanyByLogoId(1234L))
                     .thenReturn(liferayCompany);
 
             //act
