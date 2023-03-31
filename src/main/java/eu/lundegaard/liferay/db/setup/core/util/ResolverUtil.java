@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -54,8 +55,11 @@ import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import eu.lundegaard.liferay.db.setup.core.support.ClassNameLocalServiceUtilWrapper;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class ResolverUtil {
 
@@ -371,15 +375,13 @@ public final class ResolverUtil {
     }
 
     private static String getFileEntryRef(FileEntry fe) {
-        JSONObject feJsonObject = JSONUtil.put(
-                "classPK", fe.getFileEntryId()).put(
-                        "groupId", fe.getGroupId())
-                .put(
-                        "title", fe.getTitle())
-                .put(
-                        "type", "document")
-                .put(
-                        "uuid", fe.getUuid());
+        Map<String, String> jsonMap = new HashMap<>();
+        jsonMap.put("classPK", String.valueOf(fe.getFileEntryId()));
+        jsonMap.put("groupId", String.valueOf(fe.getGroupId()));
+        jsonMap.put("title", fe.getTitle());
+        jsonMap.put("type", "document");
+        jsonMap.put("uuid", fe.getUuid());
+        JSONObject feJsonObject = JSONFactoryUtil.createJSONObject(jsonMap);
         return feJsonObject.toString();
     }
 
@@ -805,7 +807,7 @@ public final class ResolverUtil {
     public static long getStructureId(final String structureKey, final long groupId,
             final Class clazz, boolean includeAncestorStructures) throws SystemException, PortalException {
 
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz);
         DDMStructure structure = DDMStructureLocalServiceUtil.getStructure(groupId, classNameId,
                 structureKey, includeAncestorStructures);
         return structure.getStructureId();
@@ -814,7 +816,7 @@ public final class ResolverUtil {
     public static String getStructureUUID(final String structureKey, final long groupId,
             final Class clazz) throws SystemException, PortalException {
 
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz);
         DDMStructure structure = DDMStructureLocalServiceUtil.getStructure(groupId, classNameId,
                 structureKey);
         return structure.getUuid();
@@ -823,7 +825,7 @@ public final class ResolverUtil {
     public static long getTemplateId(final String templateKey, final long groupId,
             final Class clazz) throws SystemException, PortalException {
 
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(clazz);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(clazz);
 
         DDMTemplate template = DDMTemplateLocalServiceUtil.getTemplate(groupId, classNameId,
                 templateKey);
@@ -896,7 +898,7 @@ public final class ResolverUtil {
     }
 
     private static long getClassId(final String clazzName) {
-        long id = ClassNameLocalServiceUtil.getClassNameId(clazzName);
+        long id = ClassNameLocalServiceUtilWrapper.getClassNameId(clazzName);
         return id;
     }
 }

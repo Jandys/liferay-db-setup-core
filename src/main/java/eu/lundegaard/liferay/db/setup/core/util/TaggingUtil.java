@@ -60,8 +60,8 @@ public final class TaggingUtil {
                 .map(category -> ResolverUtil.lookupAll(LiferaySetup.getRunAsUserId(), groupId,
                         journalArticle.getCompanyId(),
                         category.getId(), article.getPath()))
-                .filter(categoryString -> Validator.isNumber(categoryString))
-                .mapToLong(categoryString -> Long.parseLong(categoryString)).toArray();
+                .filter(Validator::isNumber)
+                .mapToLong(Long::parseLong).toArray();
 
 
         AssetEntry entry = AssetEntryLocalServiceUtil.getEntry(JournalArticle.class.getName(),
@@ -69,18 +69,6 @@ public final class TaggingUtil {
         AssetEntryLocalServiceUtil.updateEntry(LiferaySetup.getRunAsUserId(), groupId, JournalArticle.class.getName(),
                 entry.getClassPK(), categoryIds, tagNames);
     }
-
-    /*
-     * public static void associateCategories(long groupId, Article article,
-     * JournalArticle journalArticle) {
-     *
-     * List<CategoryRef> categories = article.getCategoryRef(); String[]
-     * categoryTitles = null; if (categories != null) { categoryTitles =
-     * categories.stream().map(CategoryRef -> { AssetCategoryLocalServiceUtil.get
-     * }); } AssetCategoryLocalServiceUtil.
-     *
-     * }
-     */
 
     public static void associateTagsWithJournalArticle(final List<String> tags,
             final List<String> categories, final long userId, final long groupId,

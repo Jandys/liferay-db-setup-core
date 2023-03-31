@@ -23,10 +23,19 @@
  */
 package eu.lundegaard.liferay.db.setup.core;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import com.liferay.asset.kernel.exception.DuplicateCategoryException;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
+import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
+import com.liferay.asset.kernel.service.AssetTagLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalServiceUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -36,21 +45,17 @@ import com.liferay.portal.kernel.model.ClassName;
 import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portlet.asset.util.AssetVocabularySettingsHelper;
 import eu.lundegaard.liferay.db.setup.LiferaySetup;
-import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
+import eu.lundegaard.liferay.db.setup.core.support.PortalUtilFacade;
+import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.domain.AssociatedAssetType;
 import eu.lundegaard.liferay.db.setup.domain.Category;
 import eu.lundegaard.liferay.db.setup.domain.Site;
+import eu.lundegaard.liferay.db.setup.domain.Tag;
+import eu.lundegaard.liferay.db.setup.domain.Tags;
 import eu.lundegaard.liferay.db.setup.domain.Vocabulary;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 
 /**
@@ -60,27 +65,45 @@ import java.util.Objects;
  */
 public final class SetupCategorization {
 
-    private static final Log LOG = LogFactoryUtil.getLog(SetupArticles.class);
+    private static final Log LOG = LogFactoryUtil.getLog(SetupCategorization.class);
 
     private SetupCategorization() {
 
     }
 
-    public static void setupVocabularies(final Site site, final long groupId)
+    /**
+     * Sets up vocabularies for a site.
+     *
+     * @param site the site for which to set up vocabularies
+     * @param groupId the group ID of the site
+     * @param companyId the company ID of the site
+     * @throws SystemException if a system exception occurred
+     * @throws PortalException if a portal exception occurred
+     */
+    public static void setupVocabularies(final Site site, final long groupId, long companyId)
             throws SystemException, PortalException {
         List<Vocabulary> vocabularies = site.getVocabulary();
 
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
 
         LOG.info("Setting up vocabularies");
 
         for (Vocabulary vocabulary : vocabularies) {
-            setupVocabulary(vocabulary, site, groupId, siteDefaultLocale);
+            setupVocabulary(vocabulary, site, groupId, siteDefaultLocale, companyId);
         }
     }
 
+    /**
+     * Sets up a vocabulary for a site.
+     *
+     * @param vocabulary the vocabulary to set up
+     * @param site the site for which to set up the vocabulary
+     * @param groupId the group ID of the site
+     * @param defaultLocale the default locale of the site
+     * @param companyId the company ID of the site
+     */
     private static void setupVocabulary(final Vocabulary vocabulary, final Site site, final long groupId,
-            final Locale defaultLocale) {
+            final Locale defaultLocale, long companyId) {
 
         LOG.info("Setting up vocabulary with name: " + vocabulary.getName());
 
@@ -116,13 +139,13 @@ public final class SetupCategorization {
             }
 
             setupCategories(assetVocabulary.getVocabularyId(), groupId, 0L,
-                    vocabulary.getCategory(), defaultLocale);
+                    vocabulary.getCategory(), defaultLocale, companyId);
             return;
         }
 
         try {
             ServiceContext serviceContext = new ServiceContext();
-            serviceContext.setCompanyId(PortalUtil.getDefaultCompanyId());
+            serviceContext.setCompanyId(companyId);
             serviceContext.setScopeGroupId(groupId);
             assetVocabulary = AssetVocabularyLocalServiceUtil.addVocabulary(
                     LiferaySetup.getRunAsUserId(), groupId, null, titleMap, descMap,
@@ -130,13 +153,20 @@ public final class SetupCategorization {
             LOG.info("AssetVocabulary successfuly added. ID:" + assetVocabulary.getVocabularyId()
                     + ", group:" + assetVocabulary.getGroupId());
             setupCategories(assetVocabulary.getVocabularyId(), groupId, 0L,
-                    vocabulary.getCategory(), defaultLocale);
+                    vocabulary.getCategory(), defaultLocale, companyId);
         } catch (PortalException | SystemException | NullPointerException e) {
             LOG.error("Error while trying to create vocabulary with title: "
                     + assetVocabulary.getTitle(), e);
         }
     }
 
+    /**
+     * Compose settings for a vocabulary.
+     *
+     * @param vocabulary the vocabulary for which to compose settings
+     * @param groupId the group ID of the site
+     * @return the settings for the vocabulary as a string
+     */
     private static String composeVocabularySettings(Vocabulary vocabulary, final long groupId) {
         AssetVocabularySettingsHelper assetVocabularySettingsHelper = new AssetVocabularySettingsHelper();
         assetVocabularySettingsHelper.setMultiValued(vocabulary.isMultiValued());
@@ -160,7 +190,8 @@ public final class SetupCategorization {
             }
 
             long subtypePK = -1;
-            if (Objects.nonNull(type.getSubtypeStructureKey()) && !type.getSubtypeStructureKey().isEmpty()) { // has subtype
+            if (Objects.nonNull(type.getSubtypeStructureKey()) && !type.getSubtypeStructureKey()
+                    .isEmpty()) { // has subtype
                 try {
                     subtypePK = ResolverUtil.getStructureId(type.getSubtypeStructureKey(), groupId,
                             Class.forName(type.getClassName()), true);
@@ -200,19 +231,39 @@ public final class SetupCategorization {
         return assetVocabularySettingsHelper.toString();
     }
 
+    /**
+     * Sets up categories for a vocabulary.
+     *
+     * @param vocabularyId the ID of the vocabulary for which to set up categories
+     * @param groupId the group ID of the site
+     * @param parentId the parent ID of the category
+     * @param categories the list of categories to set up
+     * @param defaultLocale the default locale of the site
+     * @param companyId the company ID of the site
+     */
     private static void setupCategories(final long vocabularyId, final long groupId,
-            final long parentId, final List<Category> categories, final Locale defaultLocale) {
+            final long parentId, final List<Category> categories, final Locale defaultLocale, long companyId) {
         LOG.info("Setting up categories for parentId:" + parentId);
 
         if (categories != null && !categories.isEmpty()) {
             for (Category category : categories) {
-                setupCategory(category, vocabularyId, groupId, defaultLocale, parentId);
+                setupCategory(category, vocabularyId, groupId, defaultLocale, parentId, companyId);
             }
         }
     }
 
+    /**
+     * Sets up a category for a vocabulary.
+     *
+     * @param category the category to set up
+     * @param vocabularyId the ID of the vocabulary for which to set up the category
+     * @param groupId the group ID of the site
+     * @param defaultLocale the default locale of the site
+     * @param parentCategoryId the parent category ID
+     * @param companyId the company ID of the site
+     */
     private static void setupCategory(final Category category, final long vocabularyId,
-            final long groupId, final Locale defaultLocale, final long parentCategoryId) {
+            final long groupId, final Locale defaultLocale, final long parentCategoryId, long companyId) {
 
         LOG.info("Setting up category with name:" + category.getName());
 
@@ -224,7 +275,7 @@ public final class SetupCategorization {
         descMap.put(defaultLocale, description);
 
         ServiceContext serviceContext = new ServiceContext();
-        serviceContext.setCompanyId(PortalUtil.getDefaultCompanyId());
+        serviceContext.setCompanyId(companyId);
         serviceContext.setScopeGroupId(groupId);
 
         AssetCategory assetCategory = null;
@@ -238,7 +289,18 @@ public final class SetupCategorization {
                     assetCategory = ac;
                 }
             }
-        } catch (SystemException e) {
+
+            if (assetCategory == null) {
+                AssetVocabulary vocabulary = AssetVocabularyLocalServiceUtil.getVocabulary(vocabularyId);
+                existingCategories = vocabulary.getCategories();
+                for (AssetCategory ac : existingCategories) {
+                    if (ac.getName().equals(category.getName())) {
+                        assetCategory = ac;
+                    }
+                }
+            }
+
+        } catch (SystemException | PortalException e) {
             LOG.error("Error while trying to find category with name: " + category.getName(), e);
         }
 
@@ -258,21 +320,76 @@ public final class SetupCategorization {
             }
 
             setupCategories(vocabularyId, groupId, assetCategory.getCategoryId(),
-                    category.getCategory(), defaultLocale);
+                    category.getCategory(), defaultLocale, companyId);
             return;
         }
 
         try {
-            assetCategory = AssetCategoryLocalServiceUtil.addCategory(LiferaySetup.getRunAsUserId(), groupId,
+            assetCategory = AssetCategoryLocalServiceUtil.addCategory(null, LiferaySetup.getRunAsUserId(), groupId,
                     parentCategoryId, titleMap, descMap, vocabularyId, null, serviceContext);
             LOG.info("Category successfully added with title: " + assetCategory.getTitle());
 
             setupCategories(vocabularyId, groupId, assetCategory.getCategoryId(),
-                    category.getCategory(), defaultLocale);
+                    category.getCategory(), defaultLocale, companyId);
 
+        } catch (DuplicateCategoryException de) {
+            LOG.info("Category with name: " + category.getName() + " already exists.");
         } catch (PortalException | SystemException e) {
-            LOG.error("Error in creating category with name: " + category.getName(), e);
+            LOG.error("Error in creating category with name: " + category.getName());
         }
 
+    }
+
+    /**
+     * Sets up tags for a site.
+     *
+     * @param site the site for which to set up tags
+     * @param groupId the group ID of the site
+     * @param companyId the company ID of the site
+     * @throws SystemException if a system exception occurred
+     */
+    public static void setupTags(final Site site, final long groupId, long companyId)
+            throws SystemException {
+        Tags tags = site.getTags();
+
+        if (tags == null) {
+            return;
+        }
+
+        List<Tag> listOfTags = tags.getTag();
+
+        LOG.info("Setting up tags");
+
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(companyId);
+        serviceContext.setScopeGroupId(groupId);
+
+        for (Tag tag : listOfTags) {
+            setupTag(tag, groupId, serviceContext);
+        }
+    }
+
+    /**
+     * Sets up a tag for a site.
+     *
+     * @param tag the tag to set up
+     * @param groupId the group ID of the site
+     * @param serviceContext the service context for the tag
+     */
+    private static void setupTag(final Tag tag, final long groupId, ServiceContext serviceContext) {
+        AssetTag assetTag = AssetTagLocalServiceUtil.fetchTag(groupId, tag.getName());
+
+        if (assetTag != null) {
+            LOG.info(String.format("Tag named: '%s' already exists. Skipping.", tag.getName()));
+            return;
+        }
+
+        try {
+            LOG.info(String.format("Tag named: '%s' already exists. Skipping.", tag.getName()));
+            AssetTagLocalServiceUtil.addTag(LiferaySetup.getRunAsUserId(), groupId, tag.getName(), serviceContext);
+        } catch (PortalException e) {
+            LOG.error("Error while trying to create tag with name: "
+                    + tag.getName(), e);
+        }
     }
 }

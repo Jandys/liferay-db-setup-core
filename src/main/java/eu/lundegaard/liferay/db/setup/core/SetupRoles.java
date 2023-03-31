@@ -23,6 +23,11 @@
  */
 package eu.lundegaard.liferay.db.setup.core;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import com.liferay.portal.kernel.dao.orm.ObjectNotFoundException;
 import com.liferay.portal.kernel.exception.NoSuchRoleException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -32,21 +37,18 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
+import eu.lundegaard.liferay.db.setup.LiferaySetup;
 import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.domain.DefinePermission;
 import eu.lundegaard.liferay.db.setup.domain.DefinePermissions;
 import eu.lundegaard.liferay.db.setup.domain.PermissionAction;
-import java.util.*;
 
 public final class SetupRoles {
 
     private static final Log LOG = LogFactoryUtil.getLog(SetupRoles.class);
-    private static final long COMPANY_ID = PortalUtil.getDefaultCompanyId();
-
     private static final String SCOPE_INDIVIDUAL = "individual";
     private static final String SCOPE_SITE = "site";
     private static final String SCOPE_SITE_TEMPLATE = "site template";
@@ -61,7 +63,7 @@ public final class SetupRoles {
 
         for (eu.lundegaard.liferay.db.setup.domain.Role role : roles) {
             try {
-                RoleLocalServiceUtil.getRole(COMPANY_ID, role.getName());
+                RoleLocalServiceUtil.getRole(LiferaySetup.getCompanyId(), role.getName());
                 LOG.info("Setup: Role " + role.getName() + " already exist, not creating...");
             } catch (NoSuchRoleException | ObjectNotFoundException e) {
                 addRole(role);
@@ -73,6 +75,11 @@ public final class SetupRoles {
         }
     }
 
+    /**
+     * Adds a role with the specified details.
+     *
+     * @param role the role to be added
+     */
     private static void addRole(final eu.lundegaard.liferay.db.setup.domain.Role role) {
 
         Map<Locale, String> localeTitleMap = new HashMap<>();
@@ -88,9 +95,9 @@ public final class SetupRoles {
                 }
             }
 
-            long defaultUserId = UserLocalServiceUtil.getDefaultUserId(COMPANY_ID);
-            RoleLocalServiceUtil.addRole(defaultUserId, null, 0, role.getName(), localeTitleMap,
-                    null, roleType, null, null);
+            long defaultUserId = UserLocalServiceUtil.getDefaultUserId(LiferaySetup.getCompanyId());
+            RoleLocalServiceUtil.addRole(defaultUserId, null, 0, role.getName(), localeTitleMap, null, roleType, null,
+                    null);
 
             LOG.info("Setup: Role " + role.getName() + " does not exist, adding...");
 
@@ -100,20 +107,32 @@ public final class SetupRoles {
 
     }
 
+    /**
+     * Deletes roles based on the delete method provided. The roles can be deleted
+     * either by excluding the listed roles or
+     * <p>
+     * including only the listed roles.
+     *
+     * @param roles List of {@link eu.lundegaard.liferay.db.setup.domain.Role}
+     *        objects to be deleted.
+     * @param deleteMethod Specifies the method of deletion. Possible values are
+     *        "excludeListed" or "onlyListed".
+     * @param companyId The identifier of the company that the roles belong to.
+     */
     public static void deleteRoles(final List<eu.lundegaard.liferay.db.setup.domain.Role> roles,
-            final String deleteMethod) {
+            final String deleteMethod, long companyId) {
 
         switch (deleteMethod) {
             case "excludeListed":
-                Map<String, eu.lundegaard.liferay.db.setup.domain.Role> toBeDeletedRoles = convertRoleListToHashMap(
-                        roles);
+                Map<String, eu.lundegaard.liferay.db.setup.domain.Role> toBeDeletedRoles =
+                        convertRoleListToHashMap(roles);
                 try {
                     for (Role role : RoleLocalServiceUtil.getRoles(-1, -1)) {
                         String name = role.getName();
                         if (!toBeDeletedRoles.containsKey(name)) {
                             try {
-                                RoleLocalServiceUtil
-                                        .deleteRole(RoleLocalServiceUtil.getRole(COMPANY_ID, name));
+                                RoleLocalServiceUtil.deleteRole(
+                                        RoleLocalServiceUtil.getRole(companyId, name));
                                 LOG.info("Deleting Role " + name);
 
                             } catch (Exception e) {
@@ -130,7 +149,8 @@ public final class SetupRoles {
                 for (eu.lundegaard.liferay.db.setup.domain.Role role : roles) {
                     String name = role.getName();
                     try {
-                        RoleLocalServiceUtil.deleteRole(RoleLocalServiceUtil.getRole(COMPANY_ID, name));
+                        RoleLocalServiceUtil.deleteRole(
+                                RoleLocalServiceUtil.getRole(LiferaySetup.getCompanyId(), name));
                         LOG.info("Deleting Role " + name);
 
                     } catch (RequiredRoleException e) {
@@ -149,6 +169,14 @@ public final class SetupRoles {
 
     }
 
+    /**
+     * This method adds role permissions to a Liferay database setup.
+     *
+     * @param role The role for which permissions are to be added.
+     * @param runAsUserId The user ID to run the setup as.
+     * @param groupId The ID of the group.
+     * @param companyId The ID of the company.
+     */
     private static void addRolePermissions(eu.lundegaard.liferay.db.setup.domain.Role role, long runAsUserId,
             long groupId, long companyId) {
         if (role.getDefinePermissions() != null) {
@@ -159,26 +187,26 @@ public final class SetupRoles {
                         + " When doing so, it is necessary to refer a site!");
             }
             DefinePermissions permissions = role.getDefinePermissions();
-            if (permissions.getDefinePermission() != null && permissions.getDefinePermission().size() > 0) {
+            if (permissions.getDefinePermission() != null && !permissions.getDefinePermission().isEmpty()) {
                 for (DefinePermission permission : permissions.getDefinePermission()) {
                     String permissionName = permission.getDefinePermissionName();
                     String resourcePrimKey = "0";
 
                     if (permission.getElementPrimaryKey() != null) {
-                        resourcePrimKey = ResolverUtil
-                                .lookupAll(runAsUserId, groupId, companyId, permission.getElementPrimaryKey(),
-                                        "Role " + role.getName() + " permission name " + permissionName);
+                        resourcePrimKey = ResolverUtil.lookupAll(runAsUserId, groupId, companyId,
+                                permission.getElementPrimaryKey(),
+                                "Role " + role.getName() + " permission name " + permissionName);
                     }
                     String type = role.getType();
                     int scope = ResourceConstants.SCOPE_COMPANY;
-                    if (type != null && type.toLowerCase().equals(SCOPE_PORTAL)) {
+                    if (type != null && type.equalsIgnoreCase(SCOPE_PORTAL)) {
                         scope = ResourceConstants.SCOPE_COMPANY;
                     }
-                    if (type != null && type.toLowerCase().equals(SCOPE_SITE)) {
+                    if (type != null && type.equalsIgnoreCase(SCOPE_SITE)) {
                         scope = ResourceConstants.SCOPE_GROUP_TEMPLATE;
                     }
 
-                    if (type != null && type.toLowerCase().equals("organization")) {
+                    if (type != null && type.equalsIgnoreCase("organization")) {
                         scope = ResourceConstants.SCOPE_GROUP_TEMPLATE;
                     }
                     if (scope == ResourceConstants.SCOPE_COMPANY && !resourcePrimKey.equals("0")) {
@@ -192,19 +220,19 @@ public final class SetupRoles {
 
                     // if defined override the define permission scope
                     if (permission.getScope() != null && !permission.getScope().equals("")) {
-                        if (permission.getScope().toLowerCase().equals(SCOPE_PORTAL)) {
+                        if (permission.getScope().equalsIgnoreCase(SCOPE_PORTAL)) {
                             scope = ResourceConstants.SCOPE_COMPANY;
-                        } else if (permission.getScope().toLowerCase().equals(SCOPE_SITE_TEMPLATE)) {
+                        } else if (permission.getScope().equalsIgnoreCase(SCOPE_SITE_TEMPLATE)) {
                             scope = ResourceConstants.SCOPE_GROUP_TEMPLATE;
-                        } else if (permission.getScope().toLowerCase().equals(SCOPE_SITE)) {
+                        } else if (permission.getScope().equalsIgnoreCase(SCOPE_SITE)) {
                             scope = ResourceConstants.SCOPE_GROUP;
-                        } else if (permission.getScope().toLowerCase().equals(SCOPE_INDIVIDUAL)) {
+                        } else if (permission.getScope().equalsIgnoreCase(SCOPE_INDIVIDUAL)) {
                             scope = ResourceConstants.SCOPE_INDIVIDUAL;
                         }
                     }
 
-                    if (permission.getPermissionAction() != null && permission.getPermissionAction().size() > 0) {
-                        ArrayList<String> listOfActions = new ArrayList<String>();
+                    if (permission.getPermissionAction() != null && !permission.getPermissionAction().isEmpty()) {
+                        ArrayList<String> listOfActions = new ArrayList<>();
                         for (PermissionAction pa : permission.getPermissionAction()) {
                             String actionname = pa.getActionName();
                             listOfActions.add(actionname);
@@ -212,18 +240,13 @@ public final class SetupRoles {
                         String[] loa = new String[listOfActions.size()];
                         loa = listOfActions.toArray(loa);
                         try {
-                            SetupPermissions.addPermission(role.getName(), permissionName, resourcePrimKey, scope, loa);
-                        } catch (SystemException e) {
-                            LOG.error(
-                                    "Error when defining permission " + permissionName + " for role " + role.getName(),
-                                    e);
-                        } catch (PortalException e) {
+                            SetupPermissions.addPermission(role.getName(), permissionName, resourcePrimKey, scope, loa,
+                                    companyId);
+                        } catch (SystemException | PortalException e) {
                             LOG.error(
                                     "Error when defining permission " + permissionName + " for role " + role.getName(),
                                     e);
                         }
-                    } else {
-
                     }
                 }
             }

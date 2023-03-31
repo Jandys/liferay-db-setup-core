@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.lundegaard.eu/liferay/setup" xmlns="http://www.lundegaard.eu/liferay/setup">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+           targetNamespace="http://www.lundegaard.eu/liferay/setup" xmlns="http://www.lundegaard.eu/liferay/setup">
 
     <xs:element name="setup">
         <xs:complexType>
@@ -15,9 +16,8 @@
                 <xs:element ref="organizations" minOccurs="0"/>
                 <xs:element ref="customFields" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="deleteLiferayObjects" minOccurs="0" maxOccurs="1"/>
-                <xs:element ref="form" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="fragment-collection" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element maxOccurs="1" minOccurs="0" ref="page-templates"/>
+                <xs:element ref="page-templates" maxOccurs="1" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -26,6 +26,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="1" maxOccurs="1" ref="runasuser"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="company"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -113,7 +114,19 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="runasuser" type="xs:string"></xs:element>
+    <xs:element name="runasuser" type="xs:string"/>
+    <xs:element name="company">
+        <xs:complexType>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="useCompanyWebId" use="optional" type="xs:boolean" default="false"/>
+                    <xs:attribute name="useCompanyMx" use="optional" type="xs:boolean" default="false"/>
+                    <xs:attribute name="useVirtualHost" use="optional" type="xs:boolean" default="false"/>
+                    <xs:attribute name="useLogoId" use="optional" type="xs:boolean" default="false"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
 
     <xs:element name="organization">
         <xs:complexType>
@@ -140,11 +153,12 @@
                 <xs:element ref="article" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="adt" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="vocabulary" minOccurs="0" maxOccurs="unbounded"/>
+                <xs:element ref="tags" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="staging" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="ddl-structure" type="structure" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="ddl-recordset" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="custom-field-setting" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="membership" minOccurs="0" />
+                <xs:element ref="membership" minOccurs="0"/>
                 <xs:element ref="site" minOccurs="0" maxOccurs="unbounded"/>
 
             </xs:sequence>
@@ -161,7 +175,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="usergroup-as-member"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="user-as-member" />
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="user-as-member"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -242,9 +256,12 @@
     <xs:element name="pageportlet">
         <xs:annotation>
             <xs:documentation>
-                Use pageportlet element to add a portlet into the page.<br/>
-                portletId - ID of the portlet instance<br/>
-                column - id of the column in the layout where the portlet should be placed in<br/>
+                Use pageportlet element to add a portlet into the page.
+                <br/>
+                portletId - ID of the portlet instance
+                <br/>
+                column - id of the column in the layout where the portlet should be placed in
+                <br/>
                 column-position - order of the portlet in the column (positive number)
             </xs:documentation>
         </xs:annotation>
@@ -276,21 +293,28 @@
                     <li>{{$ART-STRUCTURE-UUID-BY-KEY=[:: name of the site ::]&lt; article id to look for &gt;$}}</li>
                     <li>{{$ADT-TEMPLATE-ID-BY-KEY=[:: name of the site ::]&lt; article id to look for &gt;$}}</li>
                     <li>{{$ADT-TEMPLATE-UUID-BY-KEY=[:: name of the site ::]&lt; article id to look for &gt;$}}</li>
-                    <li>{{$FILE-JSON=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt; documents and media folder title of the file &gt;$}}
+                    <li>{{$FILE-JSON=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt;
+                        documents and media folder title of the file &gt;$}}
                     </li>
-                    <li>{{$FILE-ID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt; documents and media folder title of the file &gt;$}}
+                    <li>{{$FILE-ID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt;
+                        documents and media folder title of the file &gt;$}}
                     </li>
-                    <li>{{$FILE-UUID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt; documents and media folder title of the file &gt;$}}
+                    <li>{{$FILE-UUID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt;
+                        documents and media folder title of the file &gt;$}}
                     </li>
                     <li>{{$CLASS-ID-BY-NAME=&lt; fully qualified class name &gt;$}}</li>
-                    <li>{{$PRIV-PAGE-ID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page &gt;$}}
+                    <li>{{$PRIV-PAGE-ID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page
+                        &gt;$}}
                     </li>
                     <li>{{$PUB-PAGE-ID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page &gt;$}}</li>
-                    <li>{{$PRIV-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page &gt;$}}
+                    <li>{{$PRIV-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page
+                        &gt;$}}
                     </li>
-                    <li>{{$PUB-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page &gt;$}}
+                    <li>{{$PUB-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page
+                        &gt;$}}
                     </li>
-                    <li>{{$PUB-PAGE-UUID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page &gt;$}}
+                    <li>{{$PUB-PAGE-UUID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page
+                        &gt;$}}
                     </li>
                     <li>{{$DDL-REC-SET-ID-BY-KEYL=[:: name of the site ::]&lt; key of the DDL record set &gt;$}}</li>
                     <li>{{ID_OF_ORG_WITH_NAME=&lt; name of the organization &gt;$}}</li>
@@ -310,7 +334,7 @@
     <xs:element name="role">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="1" ref="define-permissions" />
+                <xs:element minOccurs="0" maxOccurs="1" ref="define-permissions"/>
             </xs:sequence>
             <xs:attribute name="name" use="required" type="xs:string"/>
             <xs:attribute name="type" use="optional" default="portal">
@@ -398,7 +422,7 @@
             <xs:sequence minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="role" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
-            <xs:attribute name="screen-name" type="xs:string" use="required" />
+            <xs:attribute name="screen-name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 
@@ -408,9 +432,9 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence minOccurs="0">
-                <xs:element ref="role" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element ref="role" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
-            <xs:attribute name="usergroup-name" type="xs:string" use="required" />
+            <xs:attribute name="usergroup-name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 
@@ -419,24 +443,30 @@
         <xs:annotation>
             <xs:appinfo>Defining Permissions for Roles</xs:appinfo>
             <xs:documentation xml:lang="en">
-                Extract the resource permissions defined for each role:<br/>
+                Extract the resource permissions defined for each role:
                 <br/>
-                SELECT        resourcePermissionId, companyId, name, scope, primKey, roleId, ownerId, actionIds<br/>
-                FROM          ResourcePermission<br/>
-                WHERE        (roleId = &lt;Role_.roleId&gt;)<br/>
                 <br/>
-                and write down as XML<br/>
+                SELECT resourcePermissionId, companyId, name, scope, primKey, roleId, ownerId, actionIds
+                <br/>
+                FROM ResourcePermission
+                <br/>
+                WHERE (roleId = &lt;Role_.roleId&gt;)
+                <br/>
+                <br/>
+                and write down as XML
+                <br/>
                 <br/>
                 &lt;define-permission define-permission-name="&lt;ResourcePermission.name&gt;"&gt;<br/>
-                ... resource actions ...<br/>
+                ... resource actions ...
+                <br/>
                 &lt;/define-permission&gt;<br/>
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="define-permission" minOccurs="0" />
+                <xs:element maxOccurs="unbounded" ref="define-permission" minOccurs="0"/>
             </xs:sequence>
-            <xs:attribute name="clear-permissions" type="xs:boolean" default="false" />
+            <xs:attribute name="clear-permissions" type="xs:boolean" default="false"/>
         </xs:complexType>
     </xs:element>
 
@@ -444,27 +474,33 @@
         <xs:annotation>
             <xs:appinfo>Defining Permission Actions for Roles</xs:appinfo>
             <xs:documentation xml:lang="en">
-                Extract the resource actions that belong to the corresponding resource permission (TransactSQL Dialect):<br/>
+                Extract the resource actions that belong to the corresponding resource permission (TransactSQL Dialect):
                 <br/>
-                SELECT ra.actionId<br/>
-                FROM [dbo].[ResourcePermission] rp,<br/>
-                [dbo].[]ResourceAction ra<br/>
-                where roleid = &lt;roleid&gt; and ra.name = rp.name and ((rp.actionids &amp; ra.bitwiseValue) &lt;&gt; 0) and ra.name = '&lt;name of the resource&gt;'<br/>
+                <br/>
+                SELECT ra.actionId
+                <br/>
+                FROM [dbo].[ResourcePermission] rp,
+                <br/>
+                [dbo].[]ResourceAction ra
+                <br/>
+                where roleid = &lt;roleid&gt; and ra.name = rp.name and ((rp.actionids &amp; ra.bitwiseValue) &lt;&gt;
+                0) and ra.name = '&lt;name of the resource&gt;'
+                <br/>
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="permission-action" minOccurs="1" />
+                <xs:element maxOccurs="unbounded" ref="permission-action" minOccurs="1"/>
             </xs:sequence>
-            <xs:attribute name="define-permission-name" use="required" type="xs:string" />
-            <xs:attribute name="element-primary-key" type="xs:string" />
+            <xs:attribute name="define-permission-name" use="required" type="xs:string"/>
+            <xs:attribute name="element-primary-key" type="xs:string"/>
             <xs:attribute name="scope" use="optional">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
-                        <xs:enumeration value="portal" />
-                        <xs:enumeration value="site" />
-                        <xs:enumeration value="site template" />
-                        <xs:enumeration value="individual" />
+                        <xs:enumeration value="portal"/>
+                        <xs:enumeration value="site"/>
+                        <xs:enumeration value="site template"/>
+                        <xs:enumeration value="individual"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
@@ -485,7 +521,7 @@
             <xs:attribute name="name" use="required"/>
             <xs:attribute name="friendlyURL" use="required"/>
             <xs:attribute name="type" default="portlet"/>
-            <xs:attribute name="target" use="optional" />
+            <xs:attribute name="target" use="optional"/>
             <xs:attribute name="hidden" type="xs:boolean" default="false"/>
             <xs:attribute name="layout" type="xs:string">
                 <xs:annotation>
@@ -605,14 +641,14 @@
         <xs:sequence>
             <xs:element ref="role-permissions" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
-        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="key" use="required" type="xs:string"/>
         <xs:attribute name="path" use="required" type="xs:string"/>
         <xs:attribute name="parent" use="optional" type="xs:string"/>
     </xs:complexType>
 
     <xs:element name="article-template">
-        <xs:complexType >
+        <xs:complexType>
             <xs:attribute name="name" type="xs:string"/>
             <xs:attribute name="key" use="required" type="xs:string"/>
             <xs:attribute name="path" use="required" type="xs:string"/>
@@ -648,21 +684,28 @@
                     <li>{{$ART-STRUCTURE-UUID-BY-KEY=[:: name of the site ::]&lt; article id to look for &gt;$}}</li>
                     <li>{{$ADT-TEMPLATE-ID-BY-KEY=[:: name of the site ::]&lt; article id to look for &gt;$}}</li>
                     <li>{{$ADT-TEMPLATE-UUID-BY-KEY=[:: name of the site ::]&lt; article id to look for &gt;$}}</li>
-                    <li>{{$FILE-JSON=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt; documents and media folder title of the file &gt;$}}
+                    <li>{{$FILE-JSON=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt;
+                        documents and media folder title of the file &gt;$}}
                     </li>
-                    <li>{{$FILE-ID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt; documents and media folder title of the file &gt;$}}
+                    <li>{{$FILE-ID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt;
+                        documents and media folder title of the file &gt;$}}
                     </li>
-                    <li>{{$FILE-UUID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt; documents and media folder title of the file &gt;$}}
+                    <li>{{$FILE-UUID=[:: name of the site ::]&lt; documents and media folder path to the file &gt;&lt;
+                        documents and media folder title of the file &gt;$}}
                     </li>
                     <li>{{$CLASS-ID-BY-NAME=&lt; fully qualified class name &gt;$}}</li>
-                    <li>{{$PRIV-PAGE-ID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page &gt;$}}
+                    <li>{{$PRIV-PAGE-ID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page
+                        &gt;$}}
                     </li>
                     <li>{{$PUB-PAGE-ID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page &gt;$}}</li>
-                    <li>{{$PRIV-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page &gt;$}}
+                    <li>{{$PRIV-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the private page
+                        &gt;$}}
                     </li>
-                    <li>{{$PUB-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page &gt;$}}
+                    <li>{{$PUB-PAGE-PLID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page
+                        &gt;$}}
                     </li>
-                    <li>{{$PUB-PAGE-UUID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page &gt;$}}
+                    <li>{{$PUB-PAGE-UUID-BY-FRIENDLY_URL=[:: name of the site ::]&lt; friendly url of the public page
+                        &gt;$}}
                     </li>
                     <li>{{$DDL-REC-SET-ID-BY-KEYL=[:: name of the site ::]&lt; key of the DDL record set &gt;$}}</li>
                     <li>{{ID_OF_ORG_WITH_NAME=&lt; name of the organization &gt;$}}</li>
@@ -670,7 +713,9 @@
                     <li>{{ID_OF_USER_GROUP_WITH_NAME=&lt; name of the user group &gt;$}}</li>
                     <li>{{UUDID_OF_USER_GROUP_WITH_NAME=&lt; name of the user group &gt;$}}</li>
                     <!--Category name is expected to come following a parent/children relationship separated by slash, i.e : ParentCategory/Child1/desiredCategoryName -->
-                    <li>{{$CATEGORY-ID-BY-VOCABULARY-AND-PATH=[:: name of the site ::][:: name of the vocabulary ::]&lt; category name path &gt;$}}</li>
+                    <li>{{$CATEGORY-ID-BY-VOCABULARY-AND-PATH=[:: name of the site ::][:: name of the vocabulary ::]&lt;
+                        category name path &gt;$}}
+                    </li>
                 </ul>
             </xs:documentation>
         </xs:annotation>
@@ -683,7 +728,7 @@
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="tag"/>
                 <xs:element ref="role-permissions" minOccurs="0" maxOccurs="1"/>
 
-                <xs:element ref="category"  minOccurs="0" maxOccurs="unbounded" />
+                <xs:element ref="category" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
             <xs:attribute name="article-structure-key" type="xs:string"/>
             <xs:attribute name="article-template-key" type="xs:string"/>
@@ -758,7 +803,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="title-translation" minOccurs="0" maxOccurs="unbounded"/>
-                <xs:element ref="associated-asset-type" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element ref="associated-asset-type" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="category"/>
             </xs:sequence>
             <xs:attribute name="name" use="required" type="xs:string"/>
@@ -769,15 +814,17 @@
 
     <xs:element name="associated-asset-type">
         <xs:complexType>
-            <xs:attribute name="class-name" use="required" type="xs:string" />
-            <xs:attribute name="subtype-structure-key" type="xs:string" />
-            <xs:attribute name="required" type="xs:boolean" default="false" />
+            <xs:attribute name="class-name" use="required" type="xs:string"/>
+            <xs:attribute name="subtype-structure-key" type="xs:string"/>
+            <xs:attribute name="required" type="xs:boolean" default="false"/>
         </xs:complexType>
     </xs:element>
 
     <xs:element name="staging">
         <xs:annotation>
-            <xs:documentation>If this element is present for site, it sets the staging environment. If not present, the staging is untouched.</xs:documentation>
+            <xs:documentation>If this element is present for site, it sets the staging environment. If not present, the
+                staging is untouched.
+            </xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
@@ -794,13 +841,15 @@
             </xs:attribute>
             <xs:attribute name="branching-public" type="xs:boolean" default="false">
                 <xs:annotation>
-                    <xs:documentation>If this attribute is set to true site variations will be switched on for public pages.
+                    <xs:documentation>If this attribute is set to true site variations will be switched on for public
+                        pages.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="branching-private" type="xs:boolean" default="false">
                 <xs:annotation>
-                    <xs:documentation>If this attribute is set to true site variations will be switched on for private pages.
+                    <xs:documentation>If this attribute is set to true site variations will be switched on for private
+                        pages.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -901,69 +950,6 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="form">
-        <xs:annotation>
-            <xs:appinfo>Defines a liferay form for setup</xs:appinfo>
-            <xs:documentation xml:lang="en">
-                Form-DB-Key is an unique identifier for the form. If you use a key of an existing form, the form will be overwritten with the new form.
-                Form-data is a string of JSON of form definition. It is taken from the table "DDMStructure" from column "Definition".
-                Form-layout is a string of JSON of form layout. It is taken from the table "DDMStructureLayout" from column "Definition".
-                Form-settings is a string of JSON of form settings. It is taken from the table "DDMFormInstance" from column "Settings_".
-                The name and description of the form are localized and need the attributes "available-locales" and "default-locale" to be set properly.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element name="form-data" type="xs:string"/>
-                <xs:element name="form-layout" type="xs:string"/>
-                <xs:element name="form-settings" type="xs:string"/>
-                <xs:element name="form-description">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="Description" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute type="xs:string" name="language-id"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                        <xs:attribute type="xs:string" name="available-locales"/>
-                        <xs:attribute type="xs:string" name="default-locale"/>
-                    </xs:complexType>
-                </xs:element>
-                <xs:element name="form-name">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="Name" minOccurs="1" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute type="xs:string" name="language-id"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                        <xs:attribute type="xs:string" name="available-locales"/>
-                        <xs:attribute type="xs:string" name="default-locale"/>
-                    </xs:complexType>
-                </xs:element>
-            </xs:sequence>
-            <xs:attribute name="form-db-key" type="xs:string" use="required"/>
-            <xs:attribute name="setup-action" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="create"/>
-                        <xs:enumeration value="update"/>
-                        <xs:enumeration value="delete"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
 
     <xs:element name="fragment-collection">
         <xs:complexType>
@@ -1007,5 +993,13 @@
             </xs:extension>
         </xs:simpleContent>
     </xs:complexType>
+
+    <xs:element name="tags">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tag" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
 </xs:schema>

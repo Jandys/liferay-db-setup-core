@@ -53,29 +53,28 @@ public class SetupSites {
 
     private static final Log LOG = LogFactoryUtil.getLog(SetupSites.class);
     private static final String DEFAULT_GROUP_NAME = "Guest";
-    private static final long COMPANY_ID = PortalUtil.getDefaultCompanyId();
 
     private SetupSites() {
 
     }
 
     public static void setupSites(final List<eu.lundegaard.liferay.db.setup.domain.Site> groups,
-            final Group parentGroup) {
+            final Group parentGroup, long companyId) {
 
-        CompanyThreadLocal.setCompanyId(COMPANY_ID);
+        CompanyThreadLocal.setCompanyId(companyId);
         for (eu.lundegaard.liferay.db.setup.domain.Site site : groups) {
             try {
                 Group liferayGroup = null;
                 long groupId = -1;
                 if (site.isDefault()) {
-                    liferayGroup = GroupLocalServiceUtil.getGroup(COMPANY_ID, DEFAULT_GROUP_NAME);
+                    liferayGroup = GroupLocalServiceUtil.getGroup(companyId, DEFAULT_GROUP_NAME);
                     LOG.info("Setup: default site. Group ID: " + groupId);
                 } else if (site.getName() == null) {
-                    liferayGroup = GroupLocalServiceUtil.getCompanyGroup(COMPANY_ID);
+                    liferayGroup = GroupLocalServiceUtil.getCompanyGroup(companyId);
                     LOG.info("Setup: global site. Group ID: " + groupId);
                 } else {
                     try {
-                        liferayGroup = GroupLocalServiceUtil.getGroup(COMPANY_ID, site.getName());
+                        liferayGroup = GroupLocalServiceUtil.getGroup(companyId, site.getName());
                         LOG.info("Setup: Site " + site.getName()
                                 + " already exists in system, not creating...");
 
@@ -83,7 +82,7 @@ public class SetupSites {
                         LOG.debug("Site does not exist.", e);
                     }
                 }
-                long defaultUserId = UserLocalServiceUtil.getDefaultUserId(COMPANY_ID);
+                long defaultUserId = UserLocalServiceUtil.getDefaultUserId(companyId);
                 ServiceContext serviceContext = new ServiceContext();
 
                 if (liferayGroup == null) {
@@ -123,36 +122,39 @@ public class SetupSites {
                     groupId = stagingGroup.getGroupId();
                 }
 
-                SetupArticles.setupSiteStructuresAndTemplates(site, groupId, COMPANY_ID);
+                SetupArticles.setupSiteStructuresAndTemplates(site, groupId, companyId);
                 LOG.info("Site DDM structures and templates setting finished.");
 
-                SetupDocumentFolders.setupDocumentFolders(site, groupId, COMPANY_ID);
+                SetupDocumentFolders.setupDocumentFolders(site, groupId, companyId);
                 LOG.info("Document Folders setting finished.");
 
-                SetupDocuments.setupSiteDocuments(site, groupId, COMPANY_ID);
+                SetupDocuments.setupSiteDocuments(site, groupId, companyId);
                 LOG.info("Documents setting finished.");
 
-                SetupPages.setupSitePages(site, groupId, COMPANY_ID, userId);
+                SetupPages.setupSitePages(site, groupId, companyId, userId);
                 LOG.info("Site Pages setting finished.");
 
-                SetupWebFolders.setupWebFolders(site, groupId, COMPANY_ID);
+                SetupWebFolders.setupWebFolders(site, groupId, companyId);
                 LOG.info("Web folders setting finished.");
 
-                SetupCategorization.setupVocabularies(site, groupId);
+                SetupCategorization.setupVocabularies(site, groupId, companyId);
                 LOG.info("Site Categories setting finished.");
 
-                SetupArticles.setupSiteArticles(site, groupId, COMPANY_ID);
+                SetupCategorization.setupTags(site, groupId, companyId);
+                LOG.info("Site Tags setting finished.");
+
+                SetupArticles.setupSiteArticles(site, groupId, companyId);
                 LOG.info("Site Articles setting finished.");
 
-                setCustomFields(userId, groupId, COMPANY_ID, site);
+                setCustomFields(userId, groupId, companyId, site);
                 LOG.info("Site custom fields set up.");
 
                 // Users and Groups should be referenced to live Group
-                setMembership(site.getMembership(), COMPANY_ID, liferayGroup.getGroupId());
+                setMembership(site.getMembership(), companyId, liferayGroup.getGroupId());
 
                 List<eu.lundegaard.liferay.db.setup.domain.Site> sites = site
                         .getSite();
-                setupSites(sites, liferayGroup);
+                setupSites(sites, liferayGroup, companyId);
 
             } catch (Exception e) {
                 LOG.error("Error by setting up site " + site.getName(), e);
@@ -340,7 +342,7 @@ public class SetupSites {
     static void setCustomFields(final long runAsUserId, final long groupId,
             final long company, final Site site) {
         if (site.getCustomFieldSetting() == null || site.getCustomFieldSetting().isEmpty()) {
-            LOG.info("Site does has no Expando field settings.");
+            LOG.info("Site has no Expando field settings.");
         } else {
             Class clazz = com.liferay.portal.kernel.model.Group.class;
             String resolverHint = "Resolving customized value for page " + site.getName() + " "
@@ -357,7 +359,7 @@ public class SetupSites {
 
     public static void deleteSite(
             final List<eu.lundegaard.liferay.db.setup.domain.Site> sites,
-            final String deleteMethod) {
+            final String deleteMethod, long companyId) {
 
         switch (deleteMethod) {
             case "excludeListed":
@@ -379,7 +381,7 @@ public class SetupSites {
                 for (eu.lundegaard.liferay.db.setup.domain.Site site : sites) {
                     String name = site.getName();
                     try {
-                        com.liferay.portal.kernel.model.Group o = GroupLocalServiceUtil.getGroup(COMPANY_ID, name);
+                        com.liferay.portal.kernel.model.Group o = GroupLocalServiceUtil.getGroup(companyId, name);
                         GroupLocalServiceUtil.deleteGroup(o);
                     } catch (Exception e) {
                         LOG.error("Error by deleting Site !", e);

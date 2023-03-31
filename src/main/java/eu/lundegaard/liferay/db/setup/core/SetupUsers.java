@@ -58,6 +58,7 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.*;
 import com.liferay.portal.kernel.util.PortalUtil;
+import eu.lundegaard.liferay.db.setup.LiferaySetup;
 import eu.lundegaard.liferay.db.setup.core.util.CustomFieldSettingUtil;
 import eu.lundegaard.liferay.db.setup.core.util.StringPool;
 import eu.lundegaard.liferay.db.setup.domain.CustomFieldSetting;
@@ -69,7 +70,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 public final class SetupUsers {
 
     private static final Log LOG = LogFactoryUtil.getLog(SetupUsers.class);
-    private static final long COMPANY_ID = PortalUtil.getDefaultCompanyId();
+
     private static final int DEFAULT_BIRTHDAY_YEAR = 1970;
 
     private SetupUsers() {
@@ -77,28 +78,28 @@ public final class SetupUsers {
     }
 
     public static void setupUsers(final List<eu.lundegaard.liferay.db.setup.domain.User> users,
-            final long runAsUser, final long groupId) {
+            final long runAsUser, final long groupId, long companyId) {
 
         for (eu.lundegaard.liferay.db.setup.domain.User user : users) {
             User liferayUser = null;
             try {
-                liferayUser = UserLocalServiceUtil.getUserByEmailAddress(COMPANY_ID,
+                liferayUser = UserLocalServiceUtil.getUserByEmailAddress(companyId,
                         user.getEmailAddress());
                 LOG.info("User " + liferayUser.getEmailAddress()
                         + " already exist, not creating...");
 
             } catch (NoSuchUserException e) {
-                liferayUser = addUser(user);
+                liferayUser = addUser(user, companyId);
 
             } catch (Exception e) {
                 LOG.error("Error by retrieving user " + user.getEmailAddress());
             }
 
             if (null != liferayUser) {
-                addUserToOrganizations(user, liferayUser);
-                addRolesToUser(user, liferayUser);
+                addUserToOrganizations(user, liferayUser, companyId);
+                addRolesToUser(user, liferayUser, companyId);
                 if (user.getCustomFieldSetting() != null && !user.getCustomFieldSetting().isEmpty()) {
-                    setCustomFields(runAsUser, groupId, COMPANY_ID, liferayUser, user);
+                    setCustomFields(runAsUser, groupId, companyId, liferayUser, user);
                 }
             } else {
                 LOG.warn("Could not create user with screenName '" + user.getScreenName() + "'");
@@ -119,7 +120,7 @@ public final class SetupUsers {
         }
     }
 
-    private static User addUser(final eu.lundegaard.liferay.db.setup.domain.User setupUser) {
+    private static User addUser(final eu.lundegaard.liferay.db.setup.domain.User setupUser, long companyId) {
 
         LOG.info("User " + setupUser.getEmailAddress() + " not exists, creating...");
 
@@ -149,9 +150,9 @@ public final class SetupUsers {
         ServiceContext serviceContext = new ServiceContext();
 
         try {
-            liferayUser = UserLocalServiceUtil.addUser(creatorUserId, COMPANY_ID, autoPassword,
+            liferayUser = UserLocalServiceUtil.addUser(creatorUserId, companyId, autoPassword,
                     password1, password2, autoScreenName, setupUser.getScreenName(), emailAddress,
-                    facebookId, openId, locale, setupUser.getFirstName(), middleName,
+                    locale, setupUser.getFirstName(), middleName,
                     setupUser.getLastName(), prefixId, suffixId, male, birthdayMonth, birthdayDay,
                     birthdayYear, jobTitle, groupIds, organizationIds, roleIds, userGroupIds,
                     sendEmail, serviceContext);
@@ -165,13 +166,13 @@ public final class SetupUsers {
     }
 
     private static void addUserToOrganizations(
-            final eu.lundegaard.liferay.db.setup.domain.User setupUser, final User liferayUser) {
+            final eu.lundegaard.liferay.db.setup.domain.User setupUser, final User liferayUser, long companyId) {
 
         try {
             for (eu.lundegaard.liferay.db.setup.domain.Organization organization : setupUser
                     .getOrganization()) {
                 Organization liferayOrganization = OrganizationLocalServiceUtil
-                        .getOrganization(COMPANY_ID, organization.getName());
+                        .getOrganization(companyId, organization.getName());
                 UserLocalServiceUtil.addOrganizationUsers(liferayOrganization.getOrganizationId(),
                         new long[] {liferayUser.getUserId()});
                 LOG.info("Adding user" + setupUser.getEmailAddress() + " to Organization "
@@ -184,12 +185,12 @@ public final class SetupUsers {
     }
 
     private static void addRolesToUser(final eu.lundegaard.liferay.db.setup.domain.User setupUser,
-            final User liferayUser) {
+            final User liferayUser, long companyId) {
 
         try {
             for (eu.lundegaard.liferay.db.setup.domain.Role userRole : setupUser.getRole()) {
 
-                Role role = RoleLocalServiceUtil.getRole(COMPANY_ID, userRole.getName());
+                Role role = RoleLocalServiceUtil.getRole(companyId, userRole.getName());
                 long[] roleIds = {role.getRoleId()};
                 String roleType = userRole.getType();
                 switch (roleType) {
@@ -201,7 +202,7 @@ public final class SetupUsers {
 
                     case "site":
                     case "organization":
-                        Group group = GroupLocalServiceUtil.getGroup(COMPANY_ID, userRole.getSite());
+                        Group group = GroupLocalServiceUtil.getGroup(companyId, userRole.getSite());
                         UserGroupRoleLocalServiceUtil.addUserGroupRoles(liferayUser.getUserId(),
                                 group.getGroupId(), roleIds);
 
@@ -228,7 +229,7 @@ public final class SetupUsers {
      * @param deleteMethod -
      */
     public static void deleteUsers(final List<eu.lundegaard.liferay.db.setup.domain.User> users,
-            final String deleteMethod) {
+            final String deleteMethod, long companyId) {
 
         switch (deleteMethod) {
             case "excludeListed":
@@ -261,7 +262,7 @@ public final class SetupUsers {
                 for (eu.lundegaard.liferay.db.setup.domain.User user : users) {
                     try {
                         String email = user.getEmailAddress();
-                        User u = UserLocalServiceUtil.getUserByEmailAddress(COMPANY_ID, email);
+                        User u = UserLocalServiceUtil.getUserByEmailAddress(companyId, email);
                         UserLocalServiceUtil.deleteUser(u);
 
                         LOG.info("Deleting User " + email);

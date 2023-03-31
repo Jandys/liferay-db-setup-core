@@ -44,9 +44,20 @@ public abstract class BasicSetupUpgradeProcess extends UpgradeProcess {
     private static final Log LOG = LogFactoryUtil.getLog(BasicSetupUpgradeProcess.class);
 
     /**
-     * Does upgrade.
-     *
-     * @throws com.liferay.portal.kernel.upgrade.UpgradeException wrapped exception
+     * 
+     * This method is used to perform upgrade of the Liferay database, by reading
+     * and processing setup files. It first retrieves the names of the setup files
+     * using the {@link #getSetupFileNames()} method. Then, it iterates through the
+     * file names and for each file, it performs the following steps:
+     * <ul>
+     * <li>Opens an input stream to read the file from the classpath</li>
+     * <li>If the input stream is null, throws a {@link UpgradeException} with a
+     * message indicating that the XML configuration was not found</li>
+     * <li>Passes the input stream to the {@link LiferaySetup#setup(InputStream)}
+     * method to process the file</li>
+     * </ul>
+     * 
+     * @throws UpgradeException if the XML configuration was not found
      */
     @Override
     public final void upgrade() throws UpgradeException {
@@ -75,7 +86,10 @@ public abstract class BasicSetupUpgradeProcess extends UpgradeProcess {
     }
 
     /**
-     * @return paths to setup xml files.
+     * This method returns {@link String[]} with file names that are in the upgrade
+     * step.
+     * 
+     * @return paths to the setup xml files.
      */
     protected abstract String[] getSetupFileNames();
 }

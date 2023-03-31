@@ -23,13 +23,11 @@
  */
 package eu.lundegaard.liferay.db.setup.core.util;
 
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringUtil;
+import eu.lundegaard.liferay.db.setup.core.support.PortalUtilFacade;
 import eu.lundegaard.liferay.db.setup.domain.DescriptionTranslation;
 import eu.lundegaard.liferay.db.setup.domain.TitleTranslation;
 import javax.xml.stream.XMLOutputFactory;
@@ -48,7 +46,7 @@ public final class FieldMapUtil {
     public static Map<Locale, String> getTitleMap(final List<TitleTranslation> translations,
             final long groupId, final String defaultLocaleTitle, final String locationHint) {
         Map<Locale, String> titleMap = new HashMap<>();
-        Locale siteDefaultLocale = getDefaultLocale(groupId, locationHint);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId, locationHint);
 
         titleMap.put(siteDefaultLocale, defaultLocaleTitle);
         if (translations != null) {
@@ -62,7 +60,7 @@ public final class FieldMapUtil {
     public static Map<Locale, String> getDescriptionMap(final List<DescriptionTranslation> translations,
             final long groupId, final String defaultLocaleTitle, final String locationHint) {
         Map<Locale, String> descriptionMap = new HashMap<>();
-        Locale siteDefaultLocale = getDefaultLocale(groupId, locationHint);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId, locationHint);
 
         descriptionMap.put(siteDefaultLocale, defaultLocaleTitle);
         if (translations != null) {
@@ -90,15 +88,7 @@ public final class FieldMapUtil {
         }
     }
 
-    public static Locale getDefaultLocale(final long groupId, final String locationHint) {
-        Locale siteDefaultLocale = null;
-        try {
-            siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
-        } catch (PortalException | SystemException e) {
-            LOG.error("Error Reading Locale while for " + locationHint);
-        }
-        return siteDefaultLocale;
-    }
+
 
     public static String getXMLTitleStructure(final Map<Locale, String> titles,
             final Locale defaultLocale) {

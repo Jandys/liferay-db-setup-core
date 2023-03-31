@@ -12,7 +12,7 @@
 
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>3.3.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Liferay Portal DB Setup core</name>
@@ -22,7 +22,8 @@
     <inceptionYear>2016</inceptionYear>
 
     <properties>
-        <liferay.version>7.3.4</liferay.version>
+        <java.version>11</java.version>
+        <liferay.version>7.4.3.54</liferay.version>
     </properties>
 
     <dependencyManagement>
@@ -44,11 +45,6 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>com.liferay.portal</groupId>
-            <artifactId>com.liferay.portal.kernel</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>com.liferay.portal</groupId>
             <artifactId>com.liferay.portal.impl</artifactId>
@@ -77,6 +73,75 @@
             <groupId>javax.portlet</groupId>
             <artifactId>portlet-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay.portal</groupId>
+            <artifactId>com.liferay.portal.kernel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.string</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
+
+
+        <!--   TESTS     -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Needed dependencies for testing Liferay's API       -->
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.lang</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.reflect</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.sql.dsl.api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.liferay</groupId>
+            <artifactId>com.liferay.petra.function</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -152,6 +217,57 @@
                         <jspf>DYNASCRIPT_STYLE</jspf>
                     </mapping>
                 </configuration>
+            </plugin>
+
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>module-info-properties</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>eu.lundegaard.commons</groupId>
+                                    <artifactId>build-support</artifactId>
+                                    <version>${lundegaard.build.support.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/generated-sources/module-info</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <includes>**/module-info.properties</includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>analyze</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+
+                            <ignoredUsedUndeclaredDependencies>
+                                <ignoredUsedUndeclaredDependency>xml-apis:xml-apis:jar:1.0.b2</ignoredUsedUndeclaredDependency>
+                            </ignoredUsedUndeclaredDependencies>
+
+                            <!-- ignored dependencies "used declared", are used inside liferay context, they are needed for proper test run -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline:jar:4.11.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>commons-configuration:commons-configuration:jar:1.10</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.reflect:jar:5.1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.sql.dsl.api:jar:4.0.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.function:jar:5.3.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>com.liferay:com.liferay.petra.lang:jar:5.1.2</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>

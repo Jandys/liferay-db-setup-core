@@ -49,7 +49,6 @@ public final class SetupOrganizations {
 
     private static final Log LOG = LogFactoryUtil.getLog(SetupOrganizations.class);
     private static final String DEFAULT_GROUP_NAME = "Guest";
-    private static final long COMPANY_ID = PortalUtil.getDefaultCompanyId();
 
     private SetupOrganizations() {
 
@@ -57,7 +56,7 @@ public final class SetupOrganizations {
 
     public static void setupOrganizations(
             final List<eu.lundegaard.liferay.db.setup.domain.Organization> organizations,
-            final Organization parentOrg, final Group parentGroup) {
+            final Organization parentOrg, final Group parentGroup, long companyId) {
         final long userId = LiferaySetup.getRunAsUserId();
 
         for (eu.lundegaard.liferay.db.setup.domain.Organization organization : organizations) {
@@ -66,7 +65,7 @@ public final class SetupOrganizations {
                 Group liferayGroup = null;
                 long groupId = -1;
                 try {
-                    Organization org = OrganizationLocalServiceUtil.getOrganization(COMPANY_ID,
+                    Organization org = OrganizationLocalServiceUtil.getOrganization(companyId,
                             organization.getName());
                     liferayGroup = org.getGroup();
                     groupId = org.getGroupId();
@@ -82,7 +81,7 @@ public final class SetupOrganizations {
                     LOG.info("Setup: Organization " + organization.getName()
                             + " does not exist in system, creating...");
 
-                    long defaultUserId = UserLocalServiceUtil.getDefaultUserId(COMPANY_ID);
+                    long defaultUserId = UserLocalServiceUtil.getDefaultUserId(companyId);
                     Organization newOrganization = OrganizationLocalServiceUtil.addOrganization(
                             defaultUserId, OrganizationConstants.DEFAULT_PARENT_ORGANIZATION_ID, organization.getName(),
                             "organization", 0, 0, ListTypeConstants.ORGANIZATION_STATUS_DEFAULT,
@@ -105,7 +104,7 @@ public final class SetupOrganizations {
                 }
 
 
-                setCustomFields(userId, groupId, COMPANY_ID, organization,
+                setCustomFields(userId, groupId, companyId, organization,
                         liferayOrg);
                 LOG.info("Organization custom fields set up.");
 
@@ -140,32 +139,32 @@ public final class SetupOrganizations {
 
                     LOG.info("Setting organization site content...");
 
-                    SetupDocumentFolders.setupDocumentFolders(orgSite, groupId, COMPANY_ID);
+                    SetupDocumentFolders.setupDocumentFolders(orgSite, groupId, companyId);
                     LOG.info("Document Folders setting finished.");
 
-                    SetupDocuments.setupSiteDocuments(orgSite, groupId, COMPANY_ID);
+                    SetupDocuments.setupSiteDocuments(orgSite, groupId, companyId);
                     LOG.info("Documents setting finished.");
 
-                    SetupPages.setupSitePages(orgSite, groupId, COMPANY_ID, userId);
+                    SetupPages.setupSitePages(orgSite, groupId, companyId, userId);
                     LOG.info("Organization Pages setting finished.");
 
-                    SetupWebFolders.setupWebFolders(orgSite, groupId, COMPANY_ID);
+                    SetupWebFolders.setupWebFolders(orgSite, groupId, companyId);
                     LOG.info("Web folders setting finished.");
 
-                    SetupCategorization.setupVocabularies(orgSite, groupId);
+                    SetupCategorization.setupVocabularies(orgSite, groupId, companyId);
                     LOG.info("Organization Categories setting finished.");
 
-                    SetupArticles.setupSiteArticles(orgSite, groupId, COMPANY_ID);
+                    SetupArticles.setupSiteArticles(orgSite, groupId, companyId);
                     LOG.info("Organization Articles setting finished.");
 
-                    SetupSites.setCustomFields(userId, groupId, COMPANY_ID, orgSite);
+                    SetupSites.setCustomFields(userId, groupId, companyId, orgSite);
                     LOG.info("Organization site custom fields set up.");
 
                 }
 
                 List<eu.lundegaard.liferay.db.setup.domain.Organization> orgs = organization
                         .getOrganization();
-                setupOrganizations(orgs, liferayOrg, liferayGroup);
+                setupOrganizations(orgs, liferayOrg, liferayGroup, companyId);
 
             } catch (Exception e) {
                 LOG.error("Error by setting up organization " + organization.getName(), e);
@@ -193,7 +192,7 @@ public final class SetupOrganizations {
 
     public static void deleteOrganization(
             final List<eu.lundegaard.liferay.db.setup.domain.Organization> organizations,
-            final String deleteMethod) {
+            final String deleteMethod, long companyId) {
 
         switch (deleteMethod) {
             case "excludeListed":
@@ -222,7 +221,7 @@ public final class SetupOrganizations {
                 for (eu.lundegaard.liferay.db.setup.domain.Organization organisation : organizations) {
                     String name = organisation.getName();
                     try {
-                        Organization o = OrganizationLocalServiceUtil.getOrganization(COMPANY_ID, name);
+                        Organization o = OrganizationLocalServiceUtil.getOrganization(companyId, name);
                         OrganizationLocalServiceUtil.deleteOrganization(o);
                     } catch (Exception e) {
                         LOG.error("Error by deleting Organisation !", e);

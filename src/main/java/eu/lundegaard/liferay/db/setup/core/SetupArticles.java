@@ -44,6 +44,7 @@ import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.RoleConstants;
+import com.liferay.portal.kernel.search.DocumentImpl;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -51,8 +52,13 @@ import com.liferay.portal.kernel.service.ClassNameLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.*;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.xml.Document;
+import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.xml.ElementImpl;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import eu.lundegaard.liferay.db.setup.LiferaySetup;
+import eu.lundegaard.liferay.db.setup.core.support.ClassNameLocalServiceUtilWrapper;
+import eu.lundegaard.liferay.db.setup.core.support.PortalUtilFacade;
 import eu.lundegaard.liferay.db.setup.core.util.ResolverUtil;
 import eu.lundegaard.liferay.db.setup.core.util.ResourcesUtil;
 import eu.lundegaard.liferay.db.setup.core.util.StringPool;
@@ -60,6 +66,8 @@ import eu.lundegaard.liferay.db.setup.core.util.TaggingUtil;
 import eu.lundegaard.liferay.db.setup.core.util.FieldMapUtil;
 import eu.lundegaard.liferay.db.setup.core.util.WebFolderUtil;
 import eu.lundegaard.liferay.db.setup.domain.*;
+import org.dom4j.tree.DefaultText;
+import org.dom4j.util.IndexedElement;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -69,7 +77,8 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Created by mapa, guno..
+ * Created by mapa, guno, Updated by: Jakub Jandak, jakub.jandak@lundegaard.eu,
+ * 2023
  */
 public final class SetupArticles {
 
@@ -119,12 +128,31 @@ public final class SetupArticles {
 
     }
 
+    /**
+     * This method is used to call setup actions on the {@link Site} object and
+     * groupId, companyId. It classifies into:
+     * <ul>
+     * <li>Article Structure</li>
+     * <li>DDL Structure</li>
+     * <li>Article Template</li>
+     * </ul>
+     * <p>
+     * If any exception occurs, it logs the error.
+     *
+     * @param site the Site object containing the structures and templates to be
+     *        added
+     * @param groupId the group id where the structures and templates should be
+     *        added
+     * @param companyId the company id of the group
+     * @throws PortalException if an error occurs while adding the structures or
+     *         templates
+     */
     public static void setupSiteStructuresAndTemplates(final Site site, final long groupId, final long companyId)
             throws PortalException {
         List<Structure> articleStructures = site.getArticleStructure();
 
         if (articleStructures != null) {
-            long classNameId = ClassNameLocalServiceUtil.getClassNameId(JournalArticle.class);
+            long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(JournalArticle.class);
             for (Structure structure : articleStructures) {
                 try {
                     addDDMStructure(structure, groupId, classNameId, companyId);
@@ -139,7 +167,7 @@ public final class SetupArticles {
         List<Structure> ddlStructures = site.getDdlStructure();
 
         if (articleStructures != null) {
-            long classNameId = ClassNameLocalServiceUtil.getClassNameId(DDLRecordSet.class);
+            long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(DDLRecordSet.class);
             for (Structure structure : ddlStructures) {
                 LOG.info("Adding DDL structure " + structure.getName());
                 try {
@@ -155,7 +183,7 @@ public final class SetupArticles {
         if (articleTemplates != null) {
             for (ArticleTemplate template : articleTemplates) {
                 try {
-                    addDDMTemplate(template, groupId);
+                    addDDMTemplate(template, groupId, companyId);
                 } catch (TemplateDuplicateTemplateKeyException | IOException
                         | URISyntaxException e) {
                     LOG.error(e);
@@ -177,7 +205,7 @@ public final class SetupArticles {
         if (adts != null) {
             for (Adt template : adts) {
                 try {
-                    addDDMTemplate(template, groupId);
+                    addDDMTemplate(template, groupId, companyId);
                 } catch (TemplateDuplicateTemplateKeyException | URISyntaxException
                         | IOException e) {
                     LOG.error("Error in adding ADT: " + template.getName(), e);
@@ -188,7 +216,7 @@ public final class SetupArticles {
         if (recordSets != null) {
             for (DdlRecordset recordSet : recordSets) {
                 try {
-                    addDDLRecordSet(recordSet, groupId);
+                    addDDLRecordSet(recordSet, groupId, companyId);
                 } catch (TemplateDuplicateTemplateKeyException e) {
                     LOG.error("Error in adding DDLRecordSet: " + recordSet.getName(), e);
                 }
@@ -196,13 +224,30 @@ public final class SetupArticles {
         }
     }
 
+    /**
+     * The method addDDMStructure adds a new structure to the Liferay portal based
+     * on the provided structure information. The structure must be in JSON format
+     * and it is expected to have certain attributes such as name, key, parent, etc.
+     * The method will also set up the permissions for the structure based on the
+     * rolePermissions provided in the structure.
+     *
+     * @param structure the structure to be added
+     * @param groupId the groupId to which the structure will belong
+     * @param classNameId the classNameId of the structure, this is typically the
+     *        class name of the object associated with the structure
+     * @param companyId the companyId to which the structure will belong
+     * @throws SystemException thrown when there is a system error
+     * @throws PortalException thrown when there is a portal error
+     * @throws IOException thrown when there is an error reading the structure file
+     * @throws URISyntaxException thrown when there is an error with the URI syntax
+     */
     public static void addDDMStructure(final Structure structure, final long groupId,
             final long classNameId, final long companyId)
             throws SystemException, PortalException, IOException, URISyntaxException {
 
         LOG.info("Adding Article structure " + structure.getName());
         Map<Locale, String> nameMap = new HashMap<>();
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         String name = getStructureNameOrKey(structure);
         nameMap.put(siteDefaultLocale, name);
         Map<Locale, String> descMap = new HashMap<>();
@@ -243,6 +288,9 @@ public final class SetupArticles {
             LOG.error("Error while trying to find Structure with key: " + structure.getKey(), e);
         }
 
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(companyId);
+
         if (ddmStructure != null) {
             LOG.info("Structure already exists and will be overwritten.");
             if (structure.getParent() != null && !structure.getParent().isEmpty()) {
@@ -256,10 +304,10 @@ public final class SetupArticles {
                 }
             }
 
+
             DDMStructure ddmStructureSaved = DDMStructureLocalServiceUtil.updateStructure(LiferaySetup.getRunAsUserId(),
                     ddmStructure.getStructureId(),
-                    ddmStructure.getParentStructureId(), nameMap, descMap, ddmForm, ddmFormLayout,
-                    new ServiceContext());
+                    ddmStructure.getParentStructureId(), nameMap, descMap, ddmForm, ddmFormLayout, serviceContext);
             LOG.info("Template successfully updated: " + structure.getName());
 
             SetupPermissions.updatePermission("Structure " + structure.getKey(), groupId, companyId,
@@ -272,7 +320,7 @@ public final class SetupArticles {
 
         DDMStructure newStructure = DDMStructureLocalServiceUtil.addStructure(
                 LiferaySetup.getRunAsUserId(), groupId, structure.getParent(), classNameId,
-                structure.getKey(), nameMap, descMap, ddmForm, ddmFormLayout, "json", 0, new ServiceContext());
+                structure.getKey(), nameMap, descMap, ddmForm, ddmFormLayout, "json", 0, serviceContext);
 
         SetupPermissions.updatePermission("Structure " + structure.getKey(), groupId, companyId,
                 newStructure.getStructureId(), DDMStructure.class.getName() + "-" + JournalArticle.class.getName(),
@@ -287,14 +335,24 @@ public final class SetupArticles {
         return structure.getKey();
     }
 
-    public static void addDDMTemplate(final ArticleTemplate template, final long groupId)
+    /**
+     * This method adds a DDMTemplate to the Liferay portal
+     *
+     * @param template The article template to be added
+     * @param groupId The groupId where the template will be added
+     * @throws SystemException if a system exception occurred
+     * @throws PortalException if a portal exception occurred
+     * @throws IOException if an IO exception occurred
+     * @throws URISyntaxException if URI syntax exception occurred
+     */
+    public static void addDDMTemplate(final ArticleTemplate template, final long groupId, long companyId)
             throws SystemException, PortalException, IOException, URISyntaxException {
 
         LOG.info("Adding Article template " + template.getName());
-        long classNameId = ClassNameLocalServiceUtil.getClassNameId(DDMStructure.class);
-        long resourceClassnameId = ClassNameLocalServiceUtil.getClassNameId(JournalArticle.class);
+        long classNameId = ClassNameLocalServiceUtilWrapper.getClassNameId(DDMStructure.class);
+        long resourceClassnameId = ClassNameLocalServiceUtilWrapper.getClassNameId(JournalArticle.class);
         Map<Locale, String> nameMap = new HashMap<>();
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         String name = template.getName();
         if (name == null) {
             name = template.getKey();
@@ -342,27 +400,43 @@ public final class SetupArticles {
             return;
         }
 
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(companyId);
+
         DDMTemplate newTemplate = DDMTemplateLocalServiceUtil.addTemplate(
                 LiferaySetup.getRunAsUserId(), groupId, classNameId, classPK, resourceClassnameId, template.getKey(),
                 nameMap, descMap, DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY, null, template.getLanguage(), script,
                 template.isCacheable(), false,
-                null, null, new ServiceContext());
+                null, null, serviceContext);
         LOG.info("Added Article template: " + newTemplate.getName());
     }
 
-    public static void addDDMTemplate(final Adt template, final long groupId)
+    /**
+     * This method adds an ADT (Asset Display Template) to Liferay portal.
+     *
+     * @param template an {@link Adt} object representing the ADT to be added
+     * @param groupId the ID of the group to which the ADT should be added
+     * @throws SystemException if there is a problem accessing Liferay's template
+     *         services
+     * @throws PortalException if there is a problem with the group or template
+     *         information
+     * @throws IOException if there is a problem reading the ADT's script file
+     * @throws URISyntaxException if there is a problem with the file path of the
+     *         ADT's script
+     */
+    public static void addDDMTemplate(final Adt template, final long groupId, long companyId)
             throws SystemException, PortalException, IOException, URISyntaxException {
 
         LOG.info("Adding ADT " + template.getName());
         long classNameId = PortalUtil.getClassNameId(template.getClassName());
 
         long resourceClassnameId = Validator.isBlank(template.getResourceClassName())
-                ? ClassNameLocalServiceUtil.getClassNameId(PortletDisplayTemplate.class)
-                : ClassNameLocalServiceUtil.getClassNameId(template.getResourceClassName());
+                ? ClassNameLocalServiceUtilWrapper.getClassNameId(PortletDisplayTemplate.class)
+                : ClassNameLocalServiceUtilWrapper.getClassNameId(template.getResourceClassName());
 
         Map<Locale, String> nameMap = new HashMap<Locale, String>();
 
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         String name = template.getName();
         if (name == null) {
             name = template.getTemplateKey();
@@ -396,14 +470,29 @@ public final class SetupArticles {
             return;
         }
 
+
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(companyId);
+
+
         DDMTemplate newTemplate = DDMTemplateLocalServiceUtil.addTemplate(
                 LiferaySetup.getRunAsUserId(), groupId, classNameId, 0, resourceClassnameId, template.getTemplateKey(),
                 nameMap, descriptionMap, DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY, null, template.getLanguage(),
                 script, true, false,
-                null, null, new ServiceContext());
+                null, null, serviceContext);
         LOG.info("Added ADT: " + newTemplate.getName());
     }
 
+    /**
+     * This method creates a journal article in Liferay. The method reads the
+     * content of the article from the file specified in the path attribute of the
+     * Article. And creates article with such content.
+     *
+     * @param article object that contains information about the article such as its
+     *        title, path, and structure key.
+     * @param groupId specifies the group the article belongs to.
+     * @param companyId that specifies the company the article belongs to.
+     */
     public static void addJournalArticle(final Article article, final long groupId,
             final long companyId) {
         LOG.info("Adding Journal Article " + article.getTitle());
@@ -449,6 +538,7 @@ public final class SetupArticles {
             }
         }
         ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(companyId);
         serviceContext.setScopeGroupId(groupId);
 
         JournalArticle journalArticle = null;
@@ -487,7 +577,12 @@ public final class SetupArticles {
                 LOG.info("Article " + article.getTitle() + " with article ID: "
                         + article.getArticleId() + " already exists. Will be overwritten.");
                 journalArticle.setTitleMap(titleMap);
-                journalArticle.setContent(content);
+                Document document = (Document) new DocumentImpl();
+                org.dom4j.Element domElement = new IndexedElement("content");
+                domElement.add(new DefaultText(content));
+                Element element = new ElementImpl(domElement);
+                document.add(element);
+                journalArticle.setDocument(document);
                 journalArticle.setDescriptionMap(descriptionMap);
 
                 JournalArticleLocalServiceUtil.updateJournalArticle(journalArticle);
@@ -512,11 +607,20 @@ public final class SetupArticles {
         }
     }
 
-    private static void addDDLRecordSet(final DdlRecordset recordSet, final long groupId)
+    /**
+     * This method adds a DDL Record Set to the specified groupId. If a DDL Record
+     * Set with the same key already exists, it will be overwritten.
+     *
+     * @param recordSet The DDL Record Set to add
+     * @param groupId The groupId to add the DDL Record Set to
+     * @throws SystemException if a system exception occurred
+     * @throws PortalException if a portal exception occurred
+     */
+    private static void addDDLRecordSet(final DdlRecordset recordSet, final long groupId, final long companyId)
             throws SystemException, PortalException {
         LOG.info("Adding DDLRecordSet " + recordSet.getName());
         Map<Locale, String> nameMap = new HashMap<>();
-        Locale siteDefaultLocale = PortalUtil.getSiteDefaultLocale(groupId);
+        Locale siteDefaultLocale = PortalUtilFacade.getDefaultLocale(groupId);
         nameMap.put(siteDefaultLocale, recordSet.getName());
         Map<Locale, String> descMap = new HashMap<>();
         descMap.put(siteDefaultLocale, recordSet.getDescription());
@@ -538,15 +642,32 @@ public final class SetupArticles {
             return;
         }
 
+
+        ServiceContext serviceContext = new ServiceContext();
+        serviceContext.setCompanyId(companyId);
+
+
         DDLRecordSet newDDLRecordSet = DDLRecordSetLocalServiceUtil.addRecordSet(
                 LiferaySetup.getRunAsUserId(), groupId,
                 ResolverUtil.getStructureId(recordSet.getDdlStructureKey(), groupId,
                         DDLRecordSet.class, false),
                 recordSet.getDdlStructureKey(), nameMap, descMap, MIN_DISPLAY_ROWS, 0,
-                new ServiceContext());
+                serviceContext);
         LOG.info("Added DDLRecordSet: " + newDDLRecordSet.getName());
     }
 
+    /**
+     * This method process the related assets for a Journal Article. It adds or
+     * clears the related assets specified in the Article object.
+     *
+     * @param article the Article object that contains the related assets
+     *        information
+     * @param ja the JournalArticle object that the related assets will be added or
+     *        cleared from
+     * @param runAsUserId the user id used to perform the action
+     * @param groupId the id of the group the assets belong to
+     * @param companyId the id of the company the assets belong to
+     */
     public static void processRelatedAssets(final Article article, final JournalArticle ja,
             final long runAsUserId, final long groupId, final long companyId) {
         if (article.getRelatedAssets() != null) {
