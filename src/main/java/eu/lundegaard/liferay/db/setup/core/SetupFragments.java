@@ -208,13 +208,12 @@ public class SetupFragments {
      * @param fragment the fragment to be saved
      * @param userId the ID of the user who is saving the fragment
      * @param groupId the ID of the group to which the fragment belongs
-     * @param createdCollection the fragment collection in which the fragment will
-     *        be saved
+     * @param collection the fragment collection in which the fragment will be saved
      * @param serviceContext the service context for the operation
      * @throws PortalException if there is an error during the setup of the fragment
      */
     private static void saveFragment(Fragment fragment, long userId, long groupId,
-            com.liferay.fragment.model.FragmentCollection createdCollection, ServiceContext serviceContext) {
+            com.liferay.fragment.model.FragmentCollection collection, ServiceContext serviceContext) {
         try {
             String html = getContentFromElement(fragment.getHtml(), fragment.getName());
             String css = getContentFromElement(fragment.getCss(), fragment.getName());
@@ -225,9 +224,8 @@ public class SetupFragments {
                 config = REQUIRED_FRAGMENT_CONFIGURATION;
             }
 
-            Optional<FragmentEntry> existingFragment = findFragment(fragment, createdCollection, groupId);
+            Optional<FragmentEntry> existingFragment = findFragment(fragment, collection, groupId);
 
-            long fragmentCollectionId = 0;
             long previewFileEntryId = 0;
             boolean cachable = true;
             String icon = null;
@@ -236,12 +234,12 @@ public class SetupFragments {
             if (existingFragment.isPresent()) {
                 LOG.info("Updating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.updateFragmentEntry(userId, existingFragment.get().getFragmentEntryId(),
-                        fragmentCollectionId, fragment.getName(), css, html, js, cachable,
+                        collection.getFragmentCollectionId(), fragment.getName(), css, html, js, cachable,
                         config, icon, previewFileEntryId, 0);
             } else {
                 LOG.info("Creating fragment " + fragment.getName());
                 FragmentEntryLocalServiceUtil.addFragmentEntry(userId, groupId,
-                        createdCollection.getFragmentCollectionId(), fragment.getEntryKey(), fragment.getName(),
+                        collection.getFragmentCollectionId(), fragment.getEntryKey(), fragment.getName(),
                         css, html, js, cachable, config, icon,
                         previewFileEntryId, 1, typeOptions, 0, serviceContext);
             }
