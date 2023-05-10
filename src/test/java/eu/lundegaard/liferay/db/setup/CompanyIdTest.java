@@ -61,7 +61,7 @@ public class CompanyIdTest {
     public void companyIdById() {
         long defaultCompany;
         Company company = new Company();
-        company.setValue("1234");
+        company.setCompanyId("1234");
 
         com.liferay.portal.kernel.model.Company liferayCompany = ModelCreator.getCompany(0L);
 
@@ -85,8 +85,7 @@ public class CompanyIdTest {
     public void companyIdByWebId() {
         long defaultCompany;
         Company company = new Company();
-        company.setValue("test.com");
-        company.setUseCompanyWebId(true);
+        company.setCompanyWebId("test.com");
 
         com.liferay.portal.kernel.model.Company liferayCompany = ModelCreator.getCompany(21L);
 
@@ -111,8 +110,7 @@ public class CompanyIdTest {
     public void companyIdByCompanyMx() {
         long defaultCompany;
         Company company = new Company();
-        company.setValue("companyMX");
-        company.setUseCompanyMx(true);
+        company.setCompanyMx("companyMX");
 
         com.liferay.portal.kernel.model.Company liferayCompany = ModelCreator.getCompany(21L);
 
@@ -137,8 +135,7 @@ public class CompanyIdTest {
     public void companyIdByVirtualHost() {
         long defaultCompany;
         Company company = new Company();
-        company.setValue("virtual-host-name");
-        company.setUseVirtualHost(true);
+        company.setVirtualHost("virtual-host-name");
 
         com.liferay.portal.kernel.model.Company liferayCompany = ModelCreator.getCompany(21L);
 
@@ -163,8 +160,7 @@ public class CompanyIdTest {
     public void companyIdByLogoId() {
         long defaultCompany;
         Company company = new Company();
-        company.setValue("1234");
-        company.setUseLogoId(true);
+        company.setLogoId("1234");
 
         com.liferay.portal.kernel.model.Company liferayCompany = ModelCreator.getCompany(21L);
 
@@ -184,7 +180,6 @@ public class CompanyIdTest {
         //assert
         Assertions.assertEquals(21L, defaultCompany);
     }
-
 
 
     @Test
