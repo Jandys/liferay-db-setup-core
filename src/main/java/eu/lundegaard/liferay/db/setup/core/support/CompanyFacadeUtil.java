@@ -60,42 +60,44 @@ public class CompanyFacadeUtil {
             return PortalUtilFacade.getDefaultCompanyId();
         }
 
-        String configuredValue = company.getValue();
-        if (company.isUseCompanyWebId()) {
-            Company companyByWebId = CompanyLocalServiceUtil.getCompanyByWebId(configuredValue);
+        if (company.getCompanyWebId() != null && !company.getCompanyWebId().isEmpty()) {
+            Company companyByWebId = CompanyLocalServiceUtil.getCompanyByWebId(company.getCompanyWebId());
             if (companyByWebId != null) {
                 return companyByWebId.getCompanyId();
             }
         }
 
-        if (company.isUseCompanyMx()) {
-            Company companyByMx = CompanyLocalServiceUtil.getCompanyByMx(configuredValue);
+        if (company.getCompanyMx() != null && !company.getCompanyMx().isEmpty()) {
+            Company companyByMx = CompanyLocalServiceUtil.getCompanyByMx(company.getCompanyMx());
             if (companyByMx != null) {
                 return companyByMx.getCompanyId();
             }
         }
 
-        if (company.isUseVirtualHost()) {
-            Company companyByVirtualHost = CompanyLocalServiceUtil.getCompanyByVirtualHost(configuredValue);
+        if (company.getVirtualHost() != null && !company.getVirtualHost().isEmpty()) {
+            Company companyByVirtualHost = CompanyLocalServiceUtil.getCompanyByVirtualHost(company.getVirtualHost());
             if (companyByVirtualHost != null) {
                 return companyByVirtualHost.getCompanyId();
             }
         }
 
         try {
-            long parsedConfiguredValue = Long.parseLong(configuredValue);
 
-            if (company.isUseLogoId()) {
-                Company companyByLogoId = CompanyLocalServiceUtil.getCompanyByLogoId(parsedConfiguredValue);
+            if (company.getLogoId() != null && !company.getLogoId().isEmpty()) {
+                long logoId = Long.parseLong(company.getLogoId());
+                Company companyByLogoId = CompanyLocalServiceUtil.getCompanyByLogoId(logoId);
                 if (companyByLogoId != null) {
                     return companyByLogoId.getCompanyId();
                 }
             }
 
-            Company companyById = CompanyLocalServiceUtil.getCompanyById(parsedConfiguredValue);
+            if (company.getCompanyId() != null && !company.getCompanyId().isEmpty()) {
+                long companyId = Long.parseLong(company.getCompanyId());
+                Company companyById = CompanyLocalServiceUtil.getCompanyById(companyId);
 
-            if (companyById != null) {
-                return companyById.getCompanyId();
+                if (companyById != null) {
+                    return companyById.getCompanyId();
+                }
             }
         } catch (NumberFormatException e) {
             LOG.error("Configured value for company could not be parsed.");

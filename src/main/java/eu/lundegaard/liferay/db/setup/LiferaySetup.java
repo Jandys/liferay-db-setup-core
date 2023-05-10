@@ -141,7 +141,7 @@ public final class LiferaySetup {
 
                 LOG.info("Executing in " + companyId + " companyId");
 
-                String runAsUser = configuration.getRunasuser();
+                String runAsUser = configuration.getRunasuser().getEmail();
                 if (runAsUser == null || runAsUser.isEmpty()) {
                     setAdminPermissionCheckerForThread(companyId);
                     LOG.info("Using default administrator.");
