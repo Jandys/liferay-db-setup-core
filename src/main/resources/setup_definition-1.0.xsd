@@ -115,7 +115,7 @@
 
     <xs:element name="runasuser">
         <xs:complexType>
-            <xs:attribute name="email" use="optional" type="xs:string"/>
+            <xs:attribute name="email" use="required" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 
@@ -126,15 +126,11 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:attribute name="companyId" type="xs:string"/>
-                    <xs:attribute name="companyWebId" type="xs:string"/>
-                    <xs:attribute name="companyMx" type="xs:string"/>
-                    <xs:attribute name="virtualHost" type="xs:string"/>
-                    <xs:attribute name="logoId" type="xs:string"/>
-                </xs:extension>
-            </xs:simpleContent>
+            <xs:attribute name="companyId" type="xs:string"/>
+            <xs:attribute name="companyWebId" type="xs:string"/>
+            <xs:attribute name="companyMx" type="xs:string"/>
+            <xs:attribute name="virtualHost" type="xs:string"/>
+            <xs:attribute name="logoId" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 

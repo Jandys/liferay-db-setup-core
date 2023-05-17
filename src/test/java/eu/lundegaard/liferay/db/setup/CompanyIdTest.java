@@ -186,7 +186,6 @@ public class CompanyIdTest {
     public void companyIdWhenNumberParsingFails() {
         long defaultCompany;
         Company company = new Company();
-        company.setValue("test");
 
         try (MockedStatic<PortalUtilFacade> portalUtilFacade = Mockito.mockStatic(PortalUtilFacade.class)) {
             //prepare

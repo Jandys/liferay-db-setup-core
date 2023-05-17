@@ -8,6 +8,11 @@ Library that allows to setup a number of Liferay artifacts in a DB. It uses xml 
 > Addition of possibility to setup artifacts for not default company.\
 > Addition of Tags.
 
+
+## ⚠️ BREAKING CHANGES ⚠️
+In version `4.0.0` definition of configuration element was made, that is not backwards compatible with lower versions.
+See [XML File Content](#xml-file-content) to see how it was changed.
+
 ## Usage
 
 First add this dependency into your OSGi module project's `pom.xml`.
@@ -16,14 +21,14 @@ First add this dependency into your OSGi module project's `pom.xml`.
 <dependency>
     <groupId>eu.lundegaard.liferay</groupId>
     <artifactId>liferay-db-setup-core</artifactId>
-    <version>3.2.0</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
 and specify the dependency in your `bnd.bnd` file as a resource to include.
 
 ```properties
-Include-Resource: @liferay-db-setup-core-3.2.0.jar
+Include-Resource: @liferay-db-setup-core-4.0.0.jar
 ```
 
 Second create `UpgradeStepRegistrator` component to register your upgrade steps, e.g.
@@ -51,27 +56,26 @@ XML file of an upgrade step has usually this structure:
 <?xml version="1.0" encoding="UTF-8" ?>
 <setup xmlns="http://www.lundegaard.eu/liferay/setup">
     <configuration>
-        <runasuser>test@liferay.com</runasuser>
-        <company>2050040</company>
+        <runasuser email="test@liferay.com"/>
+        <company companyId="2050040"/>
     </configuration>
 
     <!-- Artifacts to manage --> 
 </setup>
 ```
 
-`runasuser` defines under which user artifacts will be created. Then you can specify as many artifacts to setup as you want.\
-`runasuser` can be left blank (user is not filled) in this scenario, default companyID administrator will be used.
+`runasuser` defines under which user artifacts should be created. Then you can specify as many artifacts to setup as you want.
 
 **NEW:**\
 `company` defines in which company should the setups be done. It is _optional_ element.\
-**Company** element can also have optional flag attributes
-* useCompanyWebId
-* useCompanyMx
-* useVirtualHost
-* useLogoId
+**Company** is set using defined attributes
+* companyMx
+* companyWebId
+* logoId
+* virtualHost
 
-Those determine what the content inside the element means.\
-By Default _(without any additional attributes)_ content inside `company` element is read as **company ID**. 
+To make sure that the company is set correctly make sure you use only one of those attributes. Combination of those attributes could lead to undesired behavior.
+
 
 --- 
 ### Example of whole XML file
@@ -82,7 +86,7 @@ For instance, this will create **Role** with Publisher as a name.
 <?xml version="1.0" encoding="UTF-8" ?>
 <setup xmlns="http://www.lundegaard.eu/liferay/setup">
     <configuration>
-        <runasuser>test@liferay.com</runasuser>
+        <runasuser email="test@liferay.com"/>
     </configuration>
  
     <roles>
@@ -293,12 +297,12 @@ You can create/update/set many other artifacts like Portlet placement, Permissio
 
 ## Compatibility
 
-Liferay Portal Version | Version
----------------------- | -------
-7.4.x | 4.x.x
-7.3.x | 3.1.x
-7.2.x | 3.0.x
-older | use original [Mimacom library](https://github.com/mimacom/liferay-db-setup-core)
+| Liferay Portal Version | Version                                                                          |
+|------------------------|----------------------------------------------------------------------------------|
+| 7.4.x                  | 4.x.x                                                                            |
+| 7.3.x                  | 3.1.x                                                                            |
+| 7.2.x                  | 3.0.x                                                                            |
+| older                  | use original [Mimacom library](https://github.com/mimacom/liferay-db-setup-core) |
 
 > **Note:** New changes introduced in version 4.0.0 may not be backwards compatible.
 > Such as Tags and Company.\
