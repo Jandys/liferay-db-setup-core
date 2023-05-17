@@ -7,8 +7,8 @@
 <setup xmlns="http://www.lundegaard.eu/liferay/setup">
 
     <configuration>
-        <runasuser></runasuser>
-        <company >1</company>
+        <runasuser email="test@test.com"/>
+        <company companyId="1"/>
     </configuration>
 
 <!--    Skeleton step, does nothing -->
