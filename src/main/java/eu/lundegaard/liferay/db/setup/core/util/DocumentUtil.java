@@ -124,12 +124,23 @@ public final class DocumentUtil {
             final String sourceFileName) {
         try {
             DLAppLocalServiceUtil.updateFileEntry(userId, fe.getFileEntryId(), sourceFileName,
-                    fe.getMimeType(), fe.getTitle(), "URL TITLE", fe.getDescription(), "update content",
+                    fe.getMimeType(), fe.getTitle(), parseToUrlTitle(fe.getTitle()), fe.getDescription(),
+                    "update content",
                     DLVersionNumberIncrease.MINOR,
-                    content, Date.valueOf("Expiration Date"), Date.valueOf("reviewDate"), new ServiceContext());
+                    content, null, null, new ServiceContext());
         } catch (Exception e) {
             LOG.error("Can not update Liferay Document entry with ID:" + fe.getFileEntryId(), e);
         }
+    }
+
+    private static String parseToUrlTitle(String title) {
+        // Remove special characters and convert spaces to hyphens
+        String urlTitle = title.replaceAll("[^a-zA-Z0-9\\s]", "").replaceAll("\\s+", "-");
+
+        // Make the URL lowercase
+        urlTitle = urlTitle.toLowerCase();
+
+        return urlTitle;
     }
 
     /**

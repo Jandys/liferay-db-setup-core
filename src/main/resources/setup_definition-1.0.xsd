@@ -215,6 +215,7 @@
             </xs:sequence>
             <xs:attribute name="deleteExistingPages" default="false" type="xs:boolean"/>
             <xs:attribute name="virtual-host" type="xs:string"/>
+            <xs:attribute name="languageId" type="xs:string"/>
             <xs:attribute name="defaultLayout" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>ID of default layout template for this public page set. Note that if the layout
@@ -242,6 +243,7 @@
             </xs:sequence>
             <xs:attribute name="deleteExistingPages" default="false" type="xs:boolean"/>
             <xs:attribute name="virtual-host" type="xs:string"/>
+            <xs:attribute name="languageId" type="xs:string"/>
             <xs:attribute name="defaultLayout" type="xs:string">
                 <xs:annotation>
                     <xs:documentation>ID of layout template for this page. Note that if the layout
